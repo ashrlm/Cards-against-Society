@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Cards against Society</string>
+    <string name="title_activity_new_game">newGame</string>
+    <string name="title_activity_join_game">joinGame</string>
+    <string name="credits"><a href="http://www.ashrlm.ml">-AshrLM</a>\n
+                           <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>
+    </string>
 </resources>

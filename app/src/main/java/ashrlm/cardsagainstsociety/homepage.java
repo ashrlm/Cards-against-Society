@@ -13,11 +13,19 @@ public class homepage extends AppCompatActivity {
         setContentView(R.layout.activity_homepage);
     }
 
-    public void startGame(View view) {
-        //TODO: Setup start game (Seperate activity
+    public void newGameButton(View view) {
+        Intent gotoNewGame = new Intent(this, newGame.class);
+        startActivity(gotoNewGame);
     }
 
-    public void joinGame(View view) {
-        //TODO: Setup join game (Seperate activity)
+    public void joinGameButton(View view) {
+        Intent gotoJoinGame = new Intent(this, joinGame.class);
+        startActivity(gotoJoinGame);
     }
+
+    public void creditsButton(View view) {
+        Intent gotoCredits = new Intent(this, credits.class);
+        startActivity(gotoCredits);
+    }
+
 }
