@@ -11,6 +11,7 @@ public class credits extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_credits);
+        setTitle("Cards against Society - Credits");
         TextView t2 = (TextView) findViewById(R.id.credits_text);
         t2.setMovementMethod(LinkMovementMethod.getInstance());
     }

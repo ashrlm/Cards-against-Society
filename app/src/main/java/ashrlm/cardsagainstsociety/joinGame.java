@@ -9,6 +9,6 @@ public class joinGame extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_join_game);
+        setTitle("Cards against Society - Join Game");
     }
-
 }
