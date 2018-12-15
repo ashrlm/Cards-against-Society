@@ -5,4 +5,5 @@
     <string name="credits"><a href="http://www.ashrlm.ml">-AshrLM</a>\n
                            <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>
     </string>
+    <string name="title_activity_select_players">selectPlayers</string>
 </resources>
