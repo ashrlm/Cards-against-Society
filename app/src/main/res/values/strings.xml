@@ -6,4 +6,5 @@
                            <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>
     </string>
     <string name="title_activity_select_players">selectPlayers</string>
+    <string name="API_KEY">626713309290</string>
 </resources>

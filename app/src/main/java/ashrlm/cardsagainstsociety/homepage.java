@@ -25,16 +25,19 @@ public class homepage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-        //Setup reqs for signin
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        signIn();
+//        //Setup Sign-in client
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+//                //BUG: Returns error code 4 & no user selection
+//                .requestServerAuthCode("@string/API_KEY")
+//                .requestProfile()
+//                .build();
+//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
-    private void signIn() {
-        Intent intent = mGoogleSignInClient.getSignInIntent();
+    private void startSignInIntent() {
+        GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
+                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        Intent intent = signInClient.getSignInIntent();
         startActivityForResult(intent, RC_SIGN_IN);
     }
 
@@ -54,23 +57,21 @@ public class homepage extends AppCompatActivity {
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-
-            // Signed in successfully, show authenticated UI.
-            //TODO: Find some way of storing the logged in account
+            Log.i(TAG, "signInResult: Success");
+            // Signed in successfully
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.i(TAG, "signInResult:failed code=" + e.getStatusCode());
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Error code: " + e.getStatusCode())
-                    .setTitle("An error occurred while signing in");
-            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int id) {
-                    // User clicked OK button - Do nothing
-                }
-            });
-            builder.create();
 
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (GoogleSignIn.getLastSignedInAccount(homepage.this) == null) {
+            startSignInIntent();
         }
     }
 
