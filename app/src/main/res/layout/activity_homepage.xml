@@ -9,58 +9,70 @@
     <Button
         android:id="@+id/button1"
         android:layout_width="351dp"
-        android:layout_height="107dp"
+        android:layout_height="100dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button"
-        android:text="NEW GAME"
-        android:visibility="visible"
-        android:textSize="30sp"
         android:onClick="newGameButton"
+        android:text="NEW GAME"
+        android:textSize="30sp"
+        android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.15" />
+        app:layout_constraintVertical_bias="0.123" />
 
     <Button
         android:id="@+id/button_2"
         android:layout_width="351dp"
-        android:layout_height="107dp"
+        android:layout_height="100dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button"
+        android:onClick="joinGameButton"
         android:text="JOIN GAME"
         android:textSize="30sp"
         android:visibility="visible"
-        android:onClick="joinGameButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        app:layout_constraintVertical_bias="0.361" />
 
     <Button
         android:id="@+id/button4"
         android:layout_width="351dp"
-        android:layout_height="107dp"
+        android:layout_height="100dp"
         android:layout_marginEnd="8dp"
         android:background="@drawable/button"
+        android:onClick="creditsButton"
         android:text="CREDITS"
         android:textSize="30sp"
         android:visibility="visible"
-        android:onClick="creditsButton"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_2"
-        app:layout_constraintVertical_bias="0.55" />
+        app:layout_constraintVertical_bias="0.704" />
 
     <android.support.constraint.Barrier
         android:id="@+id/barrier"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="left" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="351dp"
+        android:layout_height="100dp"
+        android:background="@drawable/button"
+        android:onClick="editDecksButton"
+        android:text="EDIT DECKS"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.433"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.61" />
 
 </android.support.constraint.ConstraintLayout>

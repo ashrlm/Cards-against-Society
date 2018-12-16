@@ -22,6 +22,12 @@ import java.util.List;
 
 import static android.content.ContentValues.TAG;
 
+//TODO: Generate UI for selecting decks
+//TODO: Generate room when start in UI pressed
+//TODO: When get to writing starting game, have Host (Whoever started game) send ALL black and
+//      ALL white cards to others to ensure syncronisation (Seperate b&w, send part at a time due to
+//      Google-imposed limits
+
 public class newGame extends Activity {
 
     private RoomConfig mJoinedRoomConfig;

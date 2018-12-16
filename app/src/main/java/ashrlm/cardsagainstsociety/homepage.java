@@ -1,7 +1,5 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -84,6 +82,12 @@ public class homepage extends AppCompatActivity {
     public void joinGameButton(View view) {
         Intent gotoJoinGame = new Intent(this, joinGame.class);
         startActivity(gotoJoinGame);
+    }
+
+    public void editDecksButton(View view) { //TODO: Add edit decks button which calls this
+
+        Intent gotoEditDecks = new Intent(this, editDecks.class);
+        startActivity(gotoEditDecks);
     }
 
     public void creditsButton(View view) {

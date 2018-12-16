@@ -9,13 +9,17 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat">
-        <meta-data android:name="com.google.android.gms.games.APP_ID"
+        <meta-data
+            android:name="com.google.android.gms.games.APP_ID"
             android:value="@string/API_KEY" />
-        <meta-data android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
         <activity android:name=".homepage">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -26,6 +30,15 @@
         <activity
             android:name=".joinGame"
             android:label="@string/title_activity_join_game" />
+        <activity
+            android:name=".editDecks"
+            android:label="@string/title_activity_edit_decks" />
+        <activity
+            android:name=".editDeck"
+            android:label="@string/title_activity_edit_deck" />
+        <activity
+            android:name=".newDeck"
+            android:label="@string/title_activity_new_deck"></activity>
     </application>
 
 </manifest>
