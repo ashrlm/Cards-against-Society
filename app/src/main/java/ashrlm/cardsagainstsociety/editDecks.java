@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import static com.google.android.gms.wearable.DataMap.TAG;
 
 public class editDecks extends Activity {
 
@@ -34,6 +30,13 @@ public class editDecks extends Activity {
             Uri file = Uri.fromFile(new File(deck));
             String fileExt = MimeTypeMap.getFileExtensionFromUrl(file.toString());
             if (fileExt.equals("txt")) {
+                //Check black or white
+                File tmp_file = new File(getFilesDir().getPath() + "/white/" + deck);
+                String card_type = "white/";
+                if (!tmp_file.exists()) {
+                    card_type = "black/";
+                }
+
                 //Generate layout
                 LinearLayout layout = findViewById(R.id.layout_btns);
 
@@ -43,10 +46,12 @@ public class editDecks extends Activity {
                 editDeckBtn.setText(String.format("Edit Deck: %s", deck));
                 editDeckBtn.setTag(deck);
                 editDeckBtn.setId(i);
+                final String finalCard_type = card_type;
                 editDeckBtn.setOnClickListener(new View.OnClickListener() {
                     public void onClick(View v) {
                         Intent gotoEditDeck = new Intent(getApplicationContext(), editDeck.class);
                         Bundle data = new Bundle();
+                        data.putString("card_type", finalCard_type);
                         data.putString("path", deck);
                         gotoEditDeck.putExtras(data);
                         startActivity(gotoEditDeck);
@@ -58,9 +63,9 @@ public class editDecks extends Activity {
                     public boolean onLongClick(View v) {
                         ViewGroup layout = (ViewGroup) editDeckBtn.getParent();
                         if (null != layout) {
-                            File unwanted_deck = new File(getFilesDir().getPath() + "/black" + deck);
+                            File unwanted_deck = new File(getFilesDir().getPath() + "/black/" + deck);
                             if (!unwanted_deck.exists()) { unwanted_deck = new File(getFilesDir().getPath() + "/white/" + deck); }
-                            boolean deleted = unwanted_deck.delete();
+                            unwanted_deck.delete();
                             layout.removeView(editDeckBtn);
 
                         }
@@ -123,24 +128,8 @@ public class editDecks extends Activity {
         for (String card_dir : getFilesDir().list()) {
             File dir = new File(getFilesDir().getPath() + "/" + card_dir);
             for (String card : dir.list()) {
-                Log.d(TAG, card);
                 cards.add(card);
             }
-        }
-        try {
-            for (String card : getAssets().list("white")) {
-                cards.add(card);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            for (String card : getAssets().list("black")) {
-                cards.add(card);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

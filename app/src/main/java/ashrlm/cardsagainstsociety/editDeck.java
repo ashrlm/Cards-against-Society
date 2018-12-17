@@ -5,7 +5,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
@@ -13,11 +12,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import static android.support.constraint.Constraints.TAG;
-
 public class editDeck extends Activity {
 
     private String deckPath;
+    private String deckType;
     private EditText new_deck;
 
     @Override
@@ -25,6 +23,7 @@ public class editDeck extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_deck);
         deckPath = getIntent().getStringExtra("path");
+        deckType = getIntent().getStringExtra("card_type");
         new_deck = findViewById(R.id.deck_title);
         //Update height of new_deck
         DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -35,7 +34,7 @@ public class editDeck extends Activity {
 
         FileInputStream fis;
         try {
-            fis = openFileInput(deckPath);
+            fis = new FileInputStream(getFilesDir().getPath() + '/' + deckType + '/' + deckPath);
             StringBuffer fileContent = new StringBuffer();
 
             byte[] buffer = new byte[1024];
@@ -46,7 +45,6 @@ public class editDeck extends Activity {
                 fileContent.append(new String(buffer, 0, n));
             }
             new_deck.setText(fileContent);
-            Log.d(TAG, "DECKTEXT: " + fileContent);
         } catch (IOException e) {
             e.printStackTrace();
         }

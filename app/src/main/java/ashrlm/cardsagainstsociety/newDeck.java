@@ -2,15 +2,12 @@ package ashrlm.cardsagainstsociety;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
 
 import java.io.File;
 import java.io.FileOutputStream;
-
-import static android.support.constraint.Constraints.TAG;
 
 public class newDeck extends Activity {
 
@@ -40,17 +37,14 @@ public class newDeck extends Activity {
                 deckTitle += ".txt";
             }
         } else {
-            Log.d(TAG, "EmptyReturn1");
             return; //No title - Do nothing
         }
 
         if (deckCards == null || deckCards.isEmpty()) {
-            Log.d(TAG, "EmptyReturn2");
             return; //No cards - Do nothing
         }
 
         deckContent = deck_content.getText().toString();
-        Log.d(TAG, "Randomexit");
 
         if (white_deck.isChecked()) {
             deckPath = deckTitle;
@@ -72,16 +66,13 @@ public class newDeck extends Activity {
         }
 
         FileOutputStream outputStream;
-        Log.d(TAG, "testtest1212");
 
         try {
             File new_deck = new File(getFilesDir().getPath() + deckFolder, deckPath);
             outputStream = new FileOutputStream(new_deck);
             outputStream.write(deckContent.getBytes());
             outputStream.close();
-            Log.d(TAG, "File created at path: " + new_deck.getAbsolutePath());
         } catch (Exception e) {
-            Log.e(TAG, "FILEERROR: " + e);
             e.printStackTrace();
         }
         finish();
