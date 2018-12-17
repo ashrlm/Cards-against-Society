@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -15,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static com.google.android.gms.wearable.DataMap.TAG;
+
 public class editDecks extends Activity {
 
     private ArrayList<String> cards = new ArrayList<String>();
@@ -23,10 +26,7 @@ public class editDecks extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_decks);
-        getCards("");
-        for (String card : getFilesDir().list()) {
-            cards.add(card);
-        }
+        getCards();
         int i = 0;
 
         for (final String deck : cards) {
@@ -104,7 +104,15 @@ public class editDecks extends Activity {
 
     }
 
-    private void getCards (String path) {
+    private void getCards () {
+        for (String card_dir : getFilesDir().list()) {
+            File dir = new File(getFilesDir().getPath() + "/" + card_dir);
+            for (String card : dir.list()) {
+                Log.d(TAG, card);
+                cards.add(card);
+            }
+
+        }
         try {
             for (String card : getAssets().list("white")) {
                 cards.add(card);
