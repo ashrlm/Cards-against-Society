@@ -38,7 +38,8 @@
             android:label="@string/title_activity_edit_deck" />
         <activity
             android:name=".newDeck"
-            android:label="@string/title_activity_new_deck"></activity>
+            android:label="@string/title_activity_new_deck" />
+        <activity android:name=".setupNewGame"></activity>
     </application>
 
 </manifest>

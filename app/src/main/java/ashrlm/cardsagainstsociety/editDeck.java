@@ -1,16 +1,19 @@
 package ashrlm.cardsagainstsociety;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import static com.google.android.gms.wearable.DataMap.TAG;
 
 public class editDeck extends Activity {
 
@@ -60,14 +63,15 @@ public class editDeck extends Activity {
         FileOutputStream outputStream;
 
         try {
-            outputStream = openFileOutput(deckPath, Context.MODE_PRIVATE);
+            new File("test");
+            outputStream = new FileOutputStream(new File(String.format("%s/%s%s", getFilesDir().getPath(), deckType, deckPath)));
             outputStream.write(fileContents.getBytes());
             outputStream.close();
+            finish();
         } catch (Exception e) {
-
+            Log.e(TAG, "Could not save to file. Error code: " + e + " DECKPATH: " + deckPath);
             e.printStackTrace();
         }
-        finish();
     }
 
 }

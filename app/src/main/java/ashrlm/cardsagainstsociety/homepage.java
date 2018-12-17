@@ -75,7 +75,7 @@ public class homepage extends AppCompatActivity {
 
     //------------------------------Code for responding to buttons----------------------------------
     public void newGameButton(View view) {
-        Intent gotoNewGame = new Intent(this, newGame.class);
+        Intent gotoNewGame = new Intent(this, setupNewGame.class);
         startActivity(gotoNewGame);
     }
 
