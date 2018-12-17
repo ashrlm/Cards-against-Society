@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -37,7 +38,7 @@ public class editDecks extends Activity {
                 LinearLayout layout = findViewById(R.id.layout_btns);
 
                 //set the properties for button
-                Button editDeckBtn = new Button(this);
+                final Button editDeckBtn = new Button(this);
                 editDeckBtn.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
                 editDeckBtn.setText(String.format("Edit Deck: %s", deck));
                 editDeckBtn.setTag(deck);
@@ -50,6 +51,20 @@ public class editDecks extends Activity {
                         gotoEditDeck.putExtras(data);
                         startActivity(gotoEditDeck);
 
+                    }
+                });
+                editDeckBtn.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        ViewGroup layout = (ViewGroup) editDeckBtn.getParent();
+                        if (null != layout) {
+                            File unwanted_deck = new File(getFilesDir().getPath() + "files/black" + deck);
+                            if (!unwanted_deck.exists()) { unwanted_deck = new File(getFilesDir().getPath() + "files/white" + deck); }
+                            unwanted_deck.delete();
+                            layout.removeView(editDeckBtn);
+
+                        }
+                        return true;
                     }
                 });
 
@@ -75,7 +90,7 @@ public class editDecks extends Activity {
         LinearLayout layout = findViewById(R.id.layout_btns);
 
         //set the properties for button
-        Button editDeckBtn = new Button(this);
+        final Button editDeckBtn = new Button(this);
         editDeckBtn.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
         editDeckBtn.setText("New Deck");
         editDeckBtn.setId(i);
