@@ -58,9 +58,9 @@ public class editDecks extends Activity {
                     public boolean onLongClick(View v) {
                         ViewGroup layout = (ViewGroup) editDeckBtn.getParent();
                         if (null != layout) {
-                            File unwanted_deck = new File(getFilesDir().getPath() + "files/black" + deck);
-                            if (!unwanted_deck.exists()) { unwanted_deck = new File(getFilesDir().getPath() + "files/white" + deck); }
-                            unwanted_deck.delete();
+                            File unwanted_deck = new File(getFilesDir().getPath() + "/black" + deck);
+                            if (!unwanted_deck.exists()) { unwanted_deck = new File(getFilesDir().getPath() + "/white/" + deck); }
+                            boolean deleted = unwanted_deck.delete();
                             layout.removeView(editDeckBtn);
 
                         }
@@ -126,7 +126,6 @@ public class editDecks extends Activity {
                 Log.d(TAG, card);
                 cards.add(card);
             }
-
         }
         try {
             for (String card : getAssets().list("white")) {
@@ -143,7 +142,5 @@ public class editDecks extends Activity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
-
 }
