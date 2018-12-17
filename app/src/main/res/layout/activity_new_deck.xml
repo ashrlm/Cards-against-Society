@@ -6,4 +6,73 @@
     android:layout_height="match_parent"
     tools:context=".newDeck">
 
+    <EditText
+        android:id="@+id/deck_title"
+        android:layout_width="415dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="8dp"
+        android:gravity="top|start"
+        android:hint="Deck Title"
+        android:scrollbars="vertical"
+        android:scrollHorizontally="true"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroup"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/deck_content"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginBottom="10dp"
+        android:gravity="top|start"
+        android:hint="Cards in deck"
+        android:scrollbars="vertical"
+        android:scrollHorizontally="true"
+        app:layout_constraintBottom_toTopOf="@+id/button3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deck_title"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="471dp"
+        android:layout_marginEnd="10dp"
+        android:background="@drawable/button"
+        android:onClick="createDeck"
+        android:text="Create deck"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deck_title"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="485dp"
+        android:layout_height="65dp"
+        tools:layout_editor_absoluteX="2dp">
+
+        <RadioButton
+            android:id="@+id/radioWhite"
+            android:layout_width="415dp"
+            android:layout_height="wrap_content"
+            android:text="White"
+            tools:layout_editor_absoluteX="214dp"
+            tools:layout_editor_absoluteY="0dp" />
+
+        <RadioButton
+            android:id="@+id/radioBlack"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Black"
+            tools:layout_editor_absoluteX="214dp"
+            tools:layout_editor_absoluteY="0dp" />
+    </RadioGroup>
+
 </android.support.constraint.ConstraintLayout>

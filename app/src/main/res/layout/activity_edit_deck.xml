@@ -6,4 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".editDeck">
 
+    <EditText
+        android:id="@+id/deck_title"
+        android:layout_width="match_parent"
+        android:layout_height="530dp"
+        android:gravity="top|start"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical"
+        android:scrollHorizontally="true" />
+
+    <Button
+        android:id="@+id/update_deck"
+        android:layout_width="373dp"
+        android:layout_height="53dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/button"
+        android:onClick="updateDeck"
+        android:text="Update cards"
+        android:textSize="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.421"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/deck_title"
+        app:layout_constraintVertical_bias="1.0" />
+
 </android.support.constraint.ConstraintLayout>
