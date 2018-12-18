@@ -1,9 +1,9 @@
 package ashrlm.cardsagainstsociety;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -12,12 +12,13 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import static android.content.ContentValues.TAG;
 
 public class setupNewGame extends Activity {
 
@@ -76,14 +77,20 @@ public class setupNewGame extends Activity {
         ll.setMargins(ll.leftMargin,
                 (int) (ll.topMargin+(10*scale + .5f)),
                 ll.rightMargin,
-                ll.bottomMargin,
+                ll.bottomMargin);
         startGameBtn.setLayoutParams(ll);
         startGameBtn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if (validateSettings()) {
-                            //TODO: Generate intent to go to newGame
+                            Intent gotoNewGame = new Intent(getApplicationContext(), newGame.class);
+                            Bundle data = new Bundle();
+                            data.putString("gameTitle", deckTitle.getText().toString());
+                            ArrayList<ArrayList<String>> decks = getSelectedDecks();
+                            data.putStringArrayList("whiteCards", decks.get(0));
+                            data.putStringArrayList("blackCards", decks.get(1));
+                            startActivity(gotoNewGame);
                         }
                     }
                 }
@@ -92,16 +99,14 @@ public class setupNewGame extends Activity {
     }
 
     private ArrayList<String> getDecks (String deckColor) {
-        ArrayList<String> decks = new ArrayList<>();
         //Custom decks
         File tmpFile = new File(getFilesDir().getAbsolutePath() + "/" + deckColor + "/");
-        decks.addAll(Arrays.asList(tmpFile.list()));
+        ArrayList<String> decks = new ArrayList<>(Arrays.asList(tmpFile.list()));
         //Builtin decks
         final AssetManager assetmanager = getApplicationContext().getAssets();
         try {
             decks.addAll(Arrays.asList(assetmanager.list(deckColor)));
         } catch (IOException e) {
-            Log.e(TAG, "Error getting builtin decks. Error code: " + e);
             e.printStackTrace();
         }
         return decks;
@@ -118,9 +123,75 @@ public class setupNewGame extends Activity {
             if (deckOption.getTag().equals("black") && deckOption.isChecked()) { blackDeckUsed = true; }
         }
 
-        if (!(whiteDeckUsed&&blackDeckUsed)) { return false; } //No white/black deck selected
+        return whiteDeckUsed&&blackDeckUsed;
 
-        return true;
+    }
 
+    private ArrayList<ArrayList<String>> getSelectedDecks() {
+        ArrayList<String> whiteDecks = new ArrayList<>();
+        ArrayList<String> blackDecks = new ArrayList<>();
+        for (CheckBox deck : checkboxes) {
+            if (deck.isChecked()) {
+                if (deck.getTag().equals("white")) {
+                    File whiteDeck = new File(getFilesDir().getAbsolutePath() + "/white/" + deck.getText().toString());
+                    if (whiteDeck.exists()) {
+                        try {
+                            BufferedReader br = new BufferedReader(new FileReader(whiteDeck));
+                            String line;
+
+                            while ((line = br.readLine()) != null) {
+                                whiteDecks.add(line);
+                            }
+                            br.close();
+                        }
+                        catch (IOException e) {
+                        }
+
+                    } else {
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(getAssets().open("white/" + deck.getText().toString())))) {
+
+                            String mLine;
+                            while ((mLine = reader.readLine()) != null) {
+                                whiteDecks.add(mLine);
+                            }
+                        } catch (IOException e) {
+                        }
+                    }
+
+                } else if (deck.getTag().equals("black")) {
+                    File blackDeck = new File(getFilesDir().getAbsolutePath() + "/black/" + deck.getText().toString());
+                    if (blackDeck.exists()) {
+                        try {
+                            BufferedReader br = new BufferedReader(new FileReader(blackDeck));
+                            String line;
+
+                            while ((line = br.readLine()) != null) {
+                                blackDecks.add(line);
+                            }
+                            br.close();
+                        }
+                        catch (IOException e) {
+                        }
+
+                    } else {
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(getAssets().open("black/" + deck.getText().toString())))) {
+
+                            String mLine;
+                            while ((mLine = reader.readLine()) != null) {
+                                blackDecks.add(mLine);
+                            }
+                        } catch (IOException e) {
+
+                        }
+                    }
+                }
+            }
+        }
+        ArrayList<ArrayList<String>> decks = new ArrayList<>();
+        decks.add(whiteDecks);
+        decks.add(blackDecks);
+        return decks;
     }
 }
