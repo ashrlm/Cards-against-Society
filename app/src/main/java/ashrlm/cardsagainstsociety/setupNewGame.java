@@ -1,9 +1,9 @@
 package ashrlm.cardsagainstsociety;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.app.Activity;
 
-public class setupNewGame extends AppCompatActivity {
+public class setupNewGame extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

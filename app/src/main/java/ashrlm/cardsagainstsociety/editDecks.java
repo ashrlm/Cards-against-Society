@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,8 +14,6 @@ import android.widget.LinearLayout.LayoutParams;
 
 import java.io.File;
 import java.util.ArrayList;
-
-import static com.google.android.gms.wearable.DataMap.TAG;
 
 public class editDecks extends Activity {
 
@@ -129,7 +126,6 @@ public class editDecks extends Activity {
     }
 
     private void getCards () {
-        Log.e(TAG, "GETFILESDIR: " + getFilesDir());
         for (String card_dir : getFilesDir().list()) {
             File dir = new File(getFilesDir().getPath() + "/" + card_dir);
             for (String card : dir.list()) {
