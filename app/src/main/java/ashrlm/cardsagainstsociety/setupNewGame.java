@@ -101,6 +101,7 @@ public class setupNewGame extends Activity {
     private ArrayList<String> getDecks (String deckColor) {
         //Custom decks
         File tmpFile = new File(getFilesDir().getAbsolutePath() + "/" + deckColor + "/");
+        if (!tmpFile.exists()) { tmpFile.mkdir(); } //Prevent crashes caused by no custom decks existing
         ArrayList<String> decks = new ArrayList<>(Arrays.asList(tmpFile.list()));
         //Builtin decks
         final AssetManager assetmanager = getApplicationContext().getAssets();

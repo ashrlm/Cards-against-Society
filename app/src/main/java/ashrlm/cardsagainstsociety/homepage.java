@@ -63,7 +63,7 @@ public class homepage extends AppCompatActivity {
             Log.i(TAG, "signInResult:failed code=" + e.getStatusCode());
         }
         if (GoogleSignIn.getLastSignedInAccount(this) == null) {
-            
+
         }
     }
 
