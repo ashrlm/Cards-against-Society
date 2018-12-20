@@ -100,4 +100,5 @@
     <string name="title_activity_edit_deck">editDeck</string>
     <string name="title_activity_new_deck">newDeck</string>
     <string name="title_activity_setup_new_game">setupNewGame</string>
+    <string name="title_activity_game_lobby">gameLobby</string>
 </resources>

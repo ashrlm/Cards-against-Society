@@ -3,12 +3,12 @@ package ashrlm.cardsagainstsociety;
 import android.os.Bundle;
 import android.app.Activity;
 
-public class joinGame extends Activity {
+public class gameLobby extends Activity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_join_game);
-        setTitle("Cards against Society - Join Game");
+        setContentView(R.layout.activity_game_lobby);
     }
+
 }

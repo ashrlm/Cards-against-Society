@@ -84,13 +84,15 @@ public class setupNewGame extends Activity {
                     @Override
                     public void onClick(View v) {
                         if (validateSettings()) {
-                            Intent gotoNewGame = new Intent(getApplicationContext(), newGame.class);
+                            ArrayList<ArrayList<String>> decks = getSelectedDecks();
+                            Intent gotoLobby = new Intent(getApplicationContext(), gameLobby.class);
                             Bundle data = new Bundle();
                             data.putString("gameTitle", deckTitle.getText().toString());
-                            ArrayList<ArrayList<String>> decks = getSelectedDecks();
                             data.putStringArrayList("whiteCards", decks.get(0));
                             data.putStringArrayList("blackCards", decks.get(1));
-                            startActivity(gotoNewGame);
+                            data.putInt("role", 0x1); //Role as card tzar - Only 1 per game
+                            gotoLobby.putExtras(data);
+                            startActivity(gotoLobby);
                         }
                     }
                 }

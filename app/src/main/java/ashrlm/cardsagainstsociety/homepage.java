@@ -77,13 +77,16 @@ public class homepage extends AppCompatActivity {
 
     //------------------------------Code for responding to buttons----------------------------------
     public void newGameButton(View view) {
-        Intent gotoNewGame = new Intent(this, setupNewGame.class);
-        startActivity(gotoNewGame);
+        Intent gotoGameSetup = new Intent(this, setupNewGame.class);
+        startActivity(gotoGameSetup);
     }
 
     public void joinGameButton(View view) {
-        Intent gotoJoinGame = new Intent(this, joinGame.class);
-        startActivity(gotoJoinGame);
+        Intent gotoLobby = new Intent(this, gameLobby.class);
+        Bundle data = new Bundle();
+        data.putInt("role", 0x0); //Allow join any game
+        gotoLobby.putExtras(data);
+        startActivity(gotoLobby);
     }
 
     public void editDecksButton(View view) { //TODO: Add edit decks button which calls this

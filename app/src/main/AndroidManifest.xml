@@ -26,12 +26,6 @@
         </activity>
         <activity android:name=".credits" />
         <activity
-            android:name=".newGame"
-            android:label="@string/title_activity_new_game" />
-        <activity
-            android:name=".joinGame"
-            android:label="@string/title_activity_join_game" />
-        <activity
             android:name=".editDecks"
             android:label="@string/title_activity_edit_decks" />
         <activity
@@ -43,6 +37,9 @@
         <activity
             android:name=".setupNewGame"
             android:label="@string/title_activity_setup_new_game" />
+        <activity
+            android:name=".gameLobby"
+            android:label="@string/title_activity_game_lobby"></activity>
     </application>
 
 </manifest>
