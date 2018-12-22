@@ -23,13 +23,6 @@ public class homepage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-//        //Setup Sign-in client
-//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-//                //BUG: Returns error code 4 & no user selection
-//                .requestServerAuthCode("@string/API_KEY")
-//                .requestProfile()
-//                .build();
-//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
     }
 
     private void startSignInIntent() {
@@ -75,7 +68,7 @@ public class homepage extends AppCompatActivity {
         }
     }
 
-    //------------------------------Code for responding to buttons----------------------------------
+    //---------------------------------Button response code-----------------------------------------
     public void newGameButton(View view) {
         Intent gotoGameSetup = new Intent(this, setupNewGame.class);
         startActivity(gotoGameSetup);
@@ -89,8 +82,7 @@ public class homepage extends AppCompatActivity {
         startActivity(gotoLobby);
     }
 
-    public void editDecksButton(View view) { //TODO: Add edit decks button which calls this
-
+    public void editDecksButton(View view) {
         Intent gotoEditDecks = new Intent(this, editDecks.class);
         startActivity(gotoEditDecks);
     }
