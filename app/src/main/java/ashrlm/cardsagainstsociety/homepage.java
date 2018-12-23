@@ -1,8 +1,8 @@
 package ashrlm.cardsagainstsociety;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
@@ -13,10 +13,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 
-public class homepage extends AppCompatActivity {
+public class homepage extends Activity {
 
-    private GoogleSignInClient mGoogleSignInClient;
-    private static final String TAG = "SignInActivity";
+    private static final String TAG = "ashrlm.cas";
     private static final int RC_SIGN_IN = 9001;
 
     @Override
@@ -54,9 +53,6 @@ public class homepage extends AppCompatActivity {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
             Log.i(TAG, "signInResult:failed code=" + e.getStatusCode());
-        }
-        if (GoogleSignIn.getLastSignedInAccount(this) == null) {
-
         }
     }
 

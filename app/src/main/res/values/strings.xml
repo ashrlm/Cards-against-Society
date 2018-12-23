@@ -8,6 +8,7 @@
     <string name="title_activity_select_players">selectPlayers</string>
     <string name="API_KEY">626713309290</string>
     <string name="title_activity_edit_decks">editDecks</string>
+    <string name="app_header">Cards against \n Society</string>
     <string name="large_text">
         "Material is the metaphor.\n\n"
 
@@ -101,4 +102,5 @@
     <string name="title_activity_new_deck">newDeck</string>
     <string name="title_activity_setup_new_game">setupNewGame</string>
     <string name="title_activity_game_lobby">gameLobby</string>
+    <string name="title_activity_main_game">mainGame</string>
 </resources>

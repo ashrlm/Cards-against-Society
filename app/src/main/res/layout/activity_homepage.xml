@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".homepage">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/app_header"
+        android:textAlignment="center"
+        android:textColor="#aaa"
+        android:textSize="40dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <Button
         android:id="@+id/button1"
         android:layout_width="351dp"
@@ -20,7 +31,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.123" />
+        app:layout_constraintVertical_bias="0.173" />
 
     <Button
         android:id="@+id/button_2"
@@ -36,7 +47,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.361" />
+        app:layout_constraintVertical_bias="0.411" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="351dp"
+        android:layout_height="100dp"
+        android:background="@drawable/button"
+        android:onClick="editDecksButton"
+        android:text="EDIT DECKS"
+        android:textSize="30sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.433"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.66" />
 
     <Button
         android:id="@+id/button4"
@@ -52,27 +78,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button_2"
-        app:layout_constraintVertical_bias="0.704" />
-
-    <android.support.constraint.Barrier
-        android:id="@+id/barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="left" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="351dp"
-        android:layout_height="100dp"
-        android:background="@drawable/button"
-        android:onClick="editDecksButton"
-        android:text="EDIT DECKS"
-        android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.433"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.61" />
+        app:layout_constraintVertical_bias="0.824" />
 
 </android.support.constraint.ConstraintLayout>
