@@ -255,20 +255,11 @@ public class gameLobby extends Activity {
         setContentView(R.layout.main_game);
         if (isCzar) {
             //Split decks
-            ArrayList<ArrayList<String>> whiteCardsSplit = new ArrayList<>();
-            for (int i = 0; i < mParticipants.size(); i++) {
-                ArrayList<String> whitesTmp = new ArrayList<>();
-                for (int j = 0; j < Math.min(10, Math.floor(whiteCards.size() / mParticipants.size())); j++) {
-                    String newCard = whiteCards.get(new Random().nextInt(whiteCards.size()));
-                    whitesTmp.add(newCard);
-                    whiteCards.remove(newCard);
-                }
-                whiteCardsSplit.add(whitesTmp);
-            }
+            ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
             //Send decks to all participants
             for (int i = 0; i < mParticipants.size(); i++) {
 
-                for (String card : whiteCardsSplit.get(0)) {
+                for (String card : whiteCardsSplit.get(i)) {
                     card = "w" + card;
                     mRealTimeMultiplayerClient.sendReliableMessage(
                             Base64.getEncoder().encode(card.getBytes()),
@@ -281,5 +272,19 @@ public class gameLobby extends Activity {
             }
         }
 
+    }
+
+    private ArrayList<ArrayList<String>> splitDeck (ArrayList<String> deck) {
+        ArrayList<ArrayList<String>> cardsSplit = new ArrayList<>();
+        for (int i = 0; i < mParticipants.size(); i++) {
+            ArrayList<String> cardsTmp = new ArrayList<>();
+            for (int j = 0; j < Math.min(10, Math.floor(deck.size() / mParticipants.size())); j++) {
+                String newCard = deck.get(new Random().nextInt(deck.size()));
+                cardsTmp.add(newCard);
+                deck.remove(newCard);
+            }
+            cardsSplit.add(cardsTmp);
+        }
+        return cardsSplit;
     }
 }
