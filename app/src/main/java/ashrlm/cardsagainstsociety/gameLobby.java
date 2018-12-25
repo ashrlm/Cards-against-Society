@@ -296,4 +296,16 @@ public class gameLobby extends Activity {
         }
         return cardsSplit;
     }
+
+    private void onWhiteCardClicked(View view) {
+        Button whiteButton = (Button) view;
+        String whiteCardText = whiteButton.getText().toString();
+        mRealTimeMultiplayerClient.sendReliableMessage(
+                whiteCardText.getBytes(),
+                mRoomId,
+                czarId,
+                null
+
+        );
+    }
 }
