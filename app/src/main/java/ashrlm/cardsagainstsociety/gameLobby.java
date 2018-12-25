@@ -1,8 +1,8 @@
 package ashrlm.cardsagainstsociety;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -25,14 +25,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Base64;
 import java.util.Random;
 
 public class gameLobby extends Activity {
@@ -93,7 +88,16 @@ public class gameLobby extends Activity {
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
             String sender = realTimeMessage.getSenderParticipantId();
-            //TODO: buf to string, check first char (B||W), remove first char, add to decks
+            try {
+                String message = new String(buf, "utf-8");
+                if (message.charAt(0) == 'w') {
+                    whiteCards.add(message);
+                } else if (message.charAt(0) == 'b') {
+                    //TODO: Update main black card - Added once I do the main game UI
+                }
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -261,12 +265,17 @@ public class gameLobby extends Activity {
 
                 for (String card : whiteCardsSplit.get(i)) {
                     card = "w" + card;
-                    mRealTimeMultiplayerClient.sendReliableMessage(
-                            Base64.getEncoder().encode(card.getBytes()),
-                            mRoomId,
-                            mParticipants.get(i).getParticipantId(),
-                            null
-                    );
+                    try {
+                        mRealTimeMultiplayerClient.sendReliableMessage(
+                                card.getBytes("utf-8"),
+                                mRoomId,
+                                mParticipants.get(i).getParticipantId(),
+                                null
+                        );
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                        Log.e(TAG, e.toString());
+                    }
                 }
 
             }
