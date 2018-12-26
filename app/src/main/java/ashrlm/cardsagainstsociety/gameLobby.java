@@ -32,6 +32,7 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.List;
 import java.util.Random;
 
@@ -51,6 +52,7 @@ public class gameLobby extends Activity {
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private boolean gameStartAttempted = false;
+    private Dictionary<String, String> playedCards;
     private static final int RC_WAITING_ROOM = 9007;
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
@@ -94,16 +96,60 @@ public class gameLobby extends Activity {
         @Override
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
-            czarId = realTimeMessage.getSenderParticipantId();
+            String senderId = realTimeMessage.getSenderParticipantId();
             try {
                 String message = new String(buf, "utf-8");
                 if (isCzar) {
                     //White card sent to czar by player
-                    //TODO: Add player to list of players who've played and add their card to dict with id
-                } else if (message.charAt(0) == 'w') {
+                    playedCards.put(senderId, message);
+                    LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
+                    found: {
+                        for (int i = 0; i < whitesPlayed.getChildCount(); i++) {
+                            if (whitesPlayed.getChildAt(i).getTag().equals(senderId)) {
+                                Button btnToOverwrite = (Button) whitesPlayed.getChildAt(i);
+                                if (btnToOverwrite.getTag().equals(senderId)) {
+                                    //Overwrite existing button
+                                    btnToOverwrite.setText(message);
+                                    break found;
+                                }
+                            }
+                        }
+                        //TODO: Add card to UI
+                    }
 
-                    whiteCards.add(message);
-                    //TODO: Add a new button to whitesScrolled which when clicked hides whitesScrolled, and sends that to the czar
+                } else if (message.charAt(0) == 'w') {
+                    czarId = senderId;
+                    //Received white card from czar - add to list of available cards
+                    whiteCards.remove(message);
+                    whiteCards.add(message.subSequence(1, message.length()-1).toString());
+                    LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+                    //Add deck buttons
+                    Button whiteCardBtn = new Button(getApplicationContext());
+                    whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+                    whiteCardBtn.setText(message);
+                    whiteCardBtn.setOnClickListener(
+                            new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    onWhiteCardClicked(v);
+                                }
+                            }
+                    );
+                    //Style button
+                    whiteCardBtn.setBackgroundResource(R.drawable.white_card);
+                    final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
+                    whiteCardBtn.setWidth((int) (100 * scale + .5f));
+                    whiteCardBtn.setHeight((int) (100 * scale + .5f));
+                    ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
+                    ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
+                            ll.topMargin,
+                            (int) (ll.rightMargin + (3 * scale + .5f)),
+                            (int) (ll.bottomMargin + (5 * scale + .5f)));
+                    whiteCardBtn.setLayoutParams(ll);
+                    whiteCardBtn.setSingleLine(false);
+                    whiteCardBtn.setTextColor(Color.DKGRAY);
+                    whiteCardBtn.setTextSize(5 * scale + .5f);
+                    whiteCardsLayout.addView(whiteCardBtn);
                 } else if (message.charAt(0) == 'b') {
                     //TODO: Update main black card - Added once I do the main game UI
                 }
@@ -292,45 +338,7 @@ public class gameLobby extends Activity {
                     }
                 }
             }
-        } else {
-            //Add decks
-            while (!decksLoaded) {
-                if (whiteCards.size() > 0) {
-                    decksLoaded = true;
-                    LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
-                    for (String card : whiteCards) {
-                        //Add deck buttons
-                        Button whiteCardBtn = new Button(this);
-                        whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
-                        whiteCardBtn.setText(card);
-                        whiteCardBtn.setOnClickListener(
-                                new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        onWhiteCardClicked(v);
-                                    }
-                                }
-                        );
-                        //Style button
-                        whiteCardBtn.setBackgroundResource(R.drawable.white_card);
-                        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-                        whiteCardBtn.setWidth((int) (100 * scale + .5f));
-                        whiteCardBtn.setHeight((int) (100 * scale + .5f));
-                        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
-                        ll.setMargins((int) (ll.leftMargin+(3*scale + .5f)),
-                                ll.topMargin,
-                                (int) (ll.rightMargin+(3*scale + .5f)),
-                                (int) (ll.bottomMargin+(5*scale + .5f)));
-                        whiteCardBtn.setLayoutParams(ll);
-                        whiteCardBtn.setSingleLine(false);
-                        whiteCardBtn.setTextColor(Color.DKGRAY);
-                        whiteCardBtn.setTextSize(5*scale + .5f);
-                        whiteCardsLayout.addView(whiteCardBtn);
-                    }
-                }
-            }
         }
-
     }
 
     private ArrayList<ArrayList<String>> splitDeck (ArrayList<String> deck) {
@@ -349,6 +357,12 @@ public class gameLobby extends Activity {
 
     private void onWhiteCardClicked(View view) {
         Button whiteButton = (Button) view;
+        //Set all other cards to deselected
+        LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
+        for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
+            buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+        }
+        whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
         String whiteCardText = whiteButton.getText().toString();
         mRealTimeMultiplayerClient.sendReliableMessage(
                 whiteCardText.getBytes(),
