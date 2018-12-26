@@ -39,7 +39,10 @@
             android:label="@string/title_activity_setup_new_game" />
         <activity
             android:name=".gameLobby"
-            android:label="@string/title_activity_game_lobby"></activity>
+            android:label="@string/title_activity_game_lobby" />
+        <activity
+            android:name=".scoreSheet"
+            android:label="@string/title_activity_score_sheet"></activity>
     </application>
 
 </manifest>

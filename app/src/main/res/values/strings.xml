@@ -103,4 +103,5 @@
     <string name="title_activity_setup_new_game">setupNewGame</string>
     <string name="title_activity_game_lobby">gameLobby</string>
     <string name="title_activity_main_game">mainGame</string>
+    <string name="title_activity_score_sheet">scoreSheet</string>
 </resources>

@@ -33,6 +33,7 @@ import com.google.android.gms.tasks.Task;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -48,11 +49,11 @@ public class gameLobby extends Activity {
     private boolean isCzar = false;
     private String mMyParticipantId;
     private boolean mPlaying = false;
-    private boolean decksLoaded = false;
+    private int numCardsRemaining = 10;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
-    private boolean gameStartAttempted = false;
-    private Dictionary<String, String> playedCards;
+    private Dictionary<String, String> playedCards; //Used by the czar
+    private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
     private static final int RC_WAITING_ROOM = 9007;
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
@@ -105,6 +106,14 @@ public class gameLobby extends Activity {
                 } else if (message.startsWith("win")) {
                     //Message in format of win [id of who won] [text on card]
                     //TODO: Update list of wins
+                    //Check if game is over
+                    if (numCardsRemaining == 0) {
+                        Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+                        showScores.putExtra("scores", wonCards);
+                        finish();
+                        startActivity(showScores);
+                    }
+                    numCardsRemaining--;
                 } else if (isCzar) {
                     //White card sent to czar by player
                     playedCards.put(senderId, message);
