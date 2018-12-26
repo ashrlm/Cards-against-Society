@@ -96,10 +96,16 @@ public class gameLobby extends Activity {
         @Override
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
             byte[] buf = realTimeMessage.getMessageData();
-            String senderId = realTimeMessage.getSenderParticipantId();
+            final String senderId = realTimeMessage.getSenderParticipantId();
             try {
                 String message = new String(buf, "utf-8");
-                if (isCzar) {
+
+                if (message.equals("newgame")) {
+                    //TODO: Update UI
+                } else if (message.startsWith("win")) {
+                    //Message in format of win [id of who won] [text on card]
+                    //TODO: Update list of wins
+                } else if (isCzar) {
                     //White card sent to czar by player
                     playedCards.put(senderId, message);
                     LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
@@ -114,8 +120,37 @@ public class gameLobby extends Activity {
                                 }
                             }
                         }
-                        //TODO: Add card to UI
-                    }
+                       //This player hasn't played yet - Add their card
+                        LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+                        //Add deck buttons
+                        Button whiteCardBtn = new Button(getApplicationContext());
+                        whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+                        whiteCardBtn.setText(message);
+                        whiteCardBtn.setTag(senderId);
+                        whiteCardBtn.setOnClickListener(
+                                new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        chooseCard(v, senderId);
+                                    }
+                                }
+                        );
+                        //Style button
+                        whiteCardBtn.setBackgroundResource(R.drawable.white_card);
+                        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
+                        whiteCardBtn.setWidth((int) (100 * scale + .5f));
+                        whiteCardBtn.setHeight((int) (100 * scale + .5f));
+                        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
+                        ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
+                                ll.topMargin,
+                                (int) (ll.rightMargin + (3 * scale + .5f)),
+                                (int) (ll.bottomMargin + (5 * scale + .5f)));
+                        whiteCardBtn.setLayoutParams(ll);
+                    whiteCardBtn.setSingleLine(false);
+                    whiteCardBtn.setTextColor(Color.DKGRAY);
+                    whiteCardBtn.setTextSize(5 * scale + .5f);
+                    whiteCardsLayout.addView(whiteCardBtn);
+                }
 
                 } else if (message.charAt(0) == 'w') {
                     czarId = senderId;
@@ -371,5 +406,28 @@ public class gameLobby extends Activity {
                 null
 
         );
+    }
+
+    private void chooseCard(View view, String senderId) {
+        Button chosenCard = (Button) view;
+
+        //Tell everyone to show card selecting UI
+        for (Participant p : mParticipants) {
+
+            mRealTimeMultiplayerClient.sendReliableMessage(
+                    "newgame".getBytes(),
+                    mRoomId,
+                    p.getParticipantId(),
+                    null
+            );
+
+            //Tell everyone who got a point
+            mRealTimeMultiplayerClient.sendReliableMessage(
+                    ("win " + senderId + " " + chosenCard.getText().toString()).getBytes(),
+                    mRoomId,
+                    chosenCard.getTag().toString(),
+                    null
+            );
+        }
     }
 }
