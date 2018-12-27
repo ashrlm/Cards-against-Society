@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.app.Activity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -50,7 +52,9 @@ public class scoreSheet extends Activity {
             }
         }
         Button homeBtn = new Button(this);
-        homeBtn.setText("Return home");
+        homeBtn.setText("Home");
+        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
+        homeBtn.setTextSize(12 * scale + .5f);
         homeBtn.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -62,6 +66,11 @@ public class scoreSheet extends Activity {
                 }
         );
         homeBtn.setBackgroundResource(R.drawable.button);
+        scoreList.addView(homeBtn);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(lp.leftMargin, (int) (50 * scale + .5f), lp.rightMargin, lp.bottomMargin);
+        homeBtn.setLayoutParams(lp);
+        homeBtn.getLayoutParams().height= (int) (100 * scale + .5f);
     }
 
     private HashMap<String, ArrayList<String>> customSort (HashMap<String, ArrayList<String>> unsorted) {
