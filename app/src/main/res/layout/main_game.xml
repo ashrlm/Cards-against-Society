@@ -23,7 +23,7 @@
             android:id="@+id/whitesScrolledLayout"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:orientation="horizontal"></LinearLayout>
+            android:orientation="horizontal" />
     </HorizontalScrollView>
 
     <ScrollView
@@ -45,4 +45,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
     </ScrollView>
+
+    <TextView
+        android:id="@+id/blackCardMain"
+        android:layout_width="262dp"
+        android:layout_height="371dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="39dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="28dp"
+        android:gravity="center"
+        android:textSize="45sp"
+        android:background="@drawable/black_card"
+        app:layout_constraintBottom_toTopOf="@+id/whitesScrolled"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/winsScrolled"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

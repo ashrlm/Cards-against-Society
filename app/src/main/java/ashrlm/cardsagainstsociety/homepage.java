@@ -71,7 +71,7 @@ public class homepage extends Activity {
     }
 
     public void joinGameButton(View view) {
-        Intent gotoLobby = new Intent(this, gameLobby.class);
+        Intent gotoLobby = new Intent(this, mainGame.class);
         Bundle data = new Bundle();
         data.putInt("role", 0x0); //Allow join any game
         gotoLobby.putExtras(data);

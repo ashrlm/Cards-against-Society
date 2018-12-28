@@ -85,7 +85,7 @@ public class setupNewGame extends Activity {
                     public void onClick(View v) {
                         if (validateSettings()) {
                             ArrayList<ArrayList<String>> decks = getSelectedDecks();
-                            Intent gotoLobby = new Intent(getApplicationContext(), gameLobby.class);
+                            Intent gotoLobby = new Intent(getApplicationContext(), mainGame.class);
                             Bundle data = new Bundle();
                             data.putString("gameTitle", deckTitle.getText().toString());
                             data.putStringArrayList("whiteCards", decks.get(0));

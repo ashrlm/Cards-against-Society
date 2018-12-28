@@ -38,7 +38,7 @@
             android:name=".setupNewGame"
             android:label="@string/title_activity_setup_new_game" />
         <activity
-            android:name=".gameLobby"
+            android:name=".mainGame"
             android:label="@string/title_activity_game_lobby" />
         <activity
             android:name=".scoreSheet"

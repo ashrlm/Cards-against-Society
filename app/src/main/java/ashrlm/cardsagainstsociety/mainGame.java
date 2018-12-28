@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -37,7 +38,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
-public class gameLobby extends Activity {
+public class mainGame extends Activity {
 
     private String czarId;
     private String mRoomId;
@@ -101,8 +102,11 @@ public class gameLobby extends Activity {
             try {
                 String message = new String(buf, "utf-8");
 
-                if (message.equals("newgame")) {
+                if (message.startsWith("newblack")) {
+                    //Message in format of "newblack [NEW BLACK CARD]"
                     //TODO: Update UI
+                    TextView blackPrompt = findViewById(R.id.blackCardMain);
+                    blackPrompt.setText(message.substring(8));
                 } else if (message.startsWith("win")) {
                     //Message in format of win [id of who won] [text on card]
                     //TODO: Update list of wins
@@ -419,12 +423,13 @@ public class gameLobby extends Activity {
 
     private void chooseCard(View view, String senderId) {
         Button chosenCard = (Button) view;
+        String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
 
         //Tell everyone to show card selecting UI
         for (Participant p : mParticipants) {
 
             mRealTimeMultiplayerClient.sendReliableMessage(
-                    "newgame".getBytes(),
+                    ("newblack " + newBlack).getBytes(),
                     mRoomId,
                     p.getParticipantId(),
                     null
