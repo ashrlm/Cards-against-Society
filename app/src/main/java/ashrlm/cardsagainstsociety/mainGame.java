@@ -104,12 +104,24 @@ public class mainGame extends Activity {
 
                 if (message.startsWith("newblack")) {
                     //Message in format of "newblack [NEW BLACK CARD]"
-                    //TODO: Update UI
+                    //Update UI
                     TextView blackPrompt = findViewById(R.id.blackCardMain);
-                    blackPrompt.setText(message.substring(8));
+                    blackPrompt.setText(message.substring(9));
                 } else if (message.startsWith("win")) {
-                    //Message in format of win [id of who won] [text on card]
-                    //TODO: Update list of wins
+                    //Message in format of win [text on card]
+                    String wonCard = message.substring(4);
+                    //Update wins hashmap
+                    if (wonCards.containsKey(senderId)) {
+                        //Update scores of existing participant
+                        wonCards.get(senderId).add(wonCard);
+                    } else {
+                        //Add participant to scores
+                        ArrayList<String> newWinTmp = new ArrayList<>();
+                        newWinTmp.add(wonCard);
+                        wonCards.put(senderId, newWinTmp);
+                    }
+
+                    //TODO: Update list of wins - Complete recreation of TextView
                     //Check if game is over
                     if (numCardsRemaining == 0) {
                         Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
