@@ -125,6 +125,15 @@ public class mainGame extends Activity {
                         wonCards.put(idNames.get(senderId), newWinTmp);
                     }
 
+                    //Update tags on own white cards
+                    LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+                    for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
+                        if (whiteCardsLayout.getChildAt(i).getVisibility() == View.INVISIBLE) {
+                            whiteCardsLayout.getChildAt(i).setTag(false); //Make card unplayable - Already done
+                            break;
+                        }
+                    }
+
                     //Update list of wins
                     TextView winsText = findViewById(R.id.winsScrolledText);
                     String newWinsMsg = "SCORES\n\n";
@@ -162,11 +171,11 @@ public class mainGame extends Activity {
                        //This player hasn't played yet - Add their card
                         LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
                         //Add deck buttons
-                        Button whiteCardBtn = new Button(getApplicationContext());
-                        whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
-                        whiteCardBtn.setText(message);
-                        whiteCardBtn.setTag(senderId);
-                        whiteCardBtn.setOnClickListener(
+                        Button playedWhiteCardBtn = new Button(getApplicationContext());
+                        playedWhiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+                        playedWhiteCardBtn.setText(message);
+                        playedWhiteCardBtn.setTag(senderId);
+                        playedWhiteCardBtn.setOnClickListener(
                                 new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
@@ -175,20 +184,20 @@ public class mainGame extends Activity {
                                 }
                         );
                         //Style button
-                        whiteCardBtn.setBackgroundResource(R.drawable.white_card);
+                        playedWhiteCardBtn.setBackgroundResource(R.drawable.white_card);
                         final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-                        whiteCardBtn.setWidth((int) (100 * scale + .5f));
-                        whiteCardBtn.setHeight((int) (100 * scale + .5f));
-                        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
+                        playedWhiteCardBtn.setWidth((int) (100 * scale + .5f));
+                        playedWhiteCardBtn.setHeight((int) (100 * scale + .5f));
+                        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) playedWhiteCardBtn.getLayoutParams();
                         ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
                                 ll.topMargin,
                                 (int) (ll.rightMargin + (3 * scale + .5f)),
                                 (int) (ll.bottomMargin + (5 * scale + .5f)));
-                        whiteCardBtn.setLayoutParams(ll);
-                    whiteCardBtn.setSingleLine(false);
-                    whiteCardBtn.setTextColor(Color.DKGRAY);
-                    whiteCardBtn.setTextSize(5 * scale + .5f);
-                    whiteCardsLayout.addView(whiteCardBtn);
+                        playedWhiteCardBtn.setLayoutParams(ll);
+                    playedWhiteCardBtn.setSingleLine(false);
+                    playedWhiteCardBtn.setTextColor(Color.DKGRAY);
+                    playedWhiteCardBtn.setTextSize(5 * scale + .5f);
+                    whiteCardsLayout.addView(playedWhiteCardBtn);
                 }
 
                 } else if (message.charAt(0) == 'w') {
@@ -223,6 +232,7 @@ public class mainGame extends Activity {
                     whiteCardBtn.setSingleLine(false);
                     whiteCardBtn.setTextColor(Color.DKGRAY);
                     whiteCardBtn.setTextSize(5 * scale + .5f);
+                    whiteCardBtn.setTag(true); //Determines playable
                     whiteCardsLayout.addView(whiteCardBtn);
                 } else if (message.charAt(0) == 'b') {
                     TextView mainBlack = findViewById(R.id.blackCardMain);
@@ -439,7 +449,9 @@ public class mainGame extends Activity {
         //Set all other cards to deselected
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
-            buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+            if ((Boolean) buttonsLayout.getChildAt(i).getTag()) {
+                buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+            }
         }
         whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
         String whiteCardText = whiteButton.getText().toString();
