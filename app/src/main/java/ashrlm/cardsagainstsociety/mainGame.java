@@ -31,11 +31,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import org.w3c.dom.Text;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class mainGame extends Activity {
@@ -73,7 +76,10 @@ public class mainGame extends Activity {
         whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
         blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
-        startQuickGame();
+        //-BD-
+        //startQuickGame();
+        runGame();
+        //-ED-
     }
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
@@ -122,7 +128,17 @@ public class mainGame extends Activity {
                         wonCards.put(idNames.get(senderId), newWinTmp);
                     }
 
-                    //TODO: Update list of wins - Complete recreation of TextView
+                    //Update list of wins
+                    TextView winsText = findViewById(R.id.winsScrolledText);
+                    String newWinsMsg = "SCORES\n\n";
+                    for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
+                        newWinsMsg += (idNames.get(win.getKey()) + "\n");
+                        for (String cardWon : win.getValue()) {
+                            newWinsMsg += ("    " + cardWon + "\n");
+                        }
+                    }
+                    winsText.setText(newWinsMsg);
+
                     //Check if game is over
                     if (numCardsRemaining == 0) {
                         Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
@@ -376,6 +392,7 @@ public class mainGame extends Activity {
     private void runGame () {
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
+
         if (isCzar) {
             //Split decks
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
