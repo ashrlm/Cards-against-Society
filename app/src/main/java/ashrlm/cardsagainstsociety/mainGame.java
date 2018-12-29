@@ -56,6 +56,7 @@ public class mainGame extends Activity {
     private Dictionary<String, String> playedCards; //Used by the czar
     private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
     private static final int RC_WAITING_ROOM = 9007;
+    private HashMap<String, String> idNames = new HashMap();
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
@@ -118,7 +119,7 @@ public class mainGame extends Activity {
                         //Add participant to scores
                         ArrayList<String> newWinTmp = new ArrayList<>();
                         newWinTmp.add(wonCard);
-                        wonCards.put(senderId, newWinTmp);
+                        wonCards.put(idNames.get(senderId), newWinTmp);
                     }
 
                     //TODO: Update list of wins - Complete recreation of TextView
@@ -380,6 +381,9 @@ public class mainGame extends Activity {
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
             //Send decks to all participants
             for (int i = 0; i < mParticipants.size(); i++) {
+
+                //Add participant name/id to deck
+                idNames.put(mParticipants.get(i).getParticipantId(), mParticipants.get(i).getDisplayName());
 
                 if (mParticipants.get(i).getParticipantId() == mMyParticipantId) { continue; }
 
