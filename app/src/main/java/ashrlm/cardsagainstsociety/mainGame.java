@@ -363,6 +363,9 @@ public class mainGame extends Activity {
                 } else {
                     //Nobody cares if this person leaves
                     mRealTimeMultiplayerClient.leave(mRoomConfig, "exited game");
+                    finish();
+                    Intent goHome = new Intent(getApplicationContext(), homepage.class);
+                    startActivity(goHome);
                 }
             }
         }
