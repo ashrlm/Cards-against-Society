@@ -23,7 +23,7 @@ import java.util.Arrays;
 public class setupNewGame extends Activity {
 
     private ArrayList<CheckBox> checkboxes = new ArrayList<>();
-    private EditText deckTitle;
+    private EditText gameTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,9 +32,9 @@ public class setupNewGame extends Activity {
 
         LinearLayout layout = findViewById(R.id.layout_decks);
         //Deck Title
-        deckTitle = new EditText(this);
-        deckTitle.setHint("Deck title");
-        layout.addView(deckTitle);
+        gameTitle = new EditText(this);
+        gameTitle.setHint("Game title");
+        layout.addView(gameTitle);
         //Create checkboxes for deck selection
         //White boxes
         String deckColor = "white";
@@ -87,7 +87,7 @@ public class setupNewGame extends Activity {
                             ArrayList<ArrayList<String>> decks = getSelectedDecks();
                             Intent gotoLobby = new Intent(getApplicationContext(), mainGame.class);
                             Bundle data = new Bundle();
-                            data.putString("gameTitle", deckTitle.getText().toString());
+                            data.putString("gameTitle", gameTitle.getText().toString());
                             data.putStringArrayList("whiteCards", decks.get(0));
                             data.putStringArrayList("blackCards", decks.get(1));
                             data.putInt("role", 0x1); //Role as card tzar - Only 1 per game
@@ -116,7 +116,7 @@ public class setupNewGame extends Activity {
     }
 
     private boolean validateSettings() {
-        if (deckTitle.getText().toString().equals("")) { return false; } //No game title
+        if (gameTitle.getText().toString().equals("")) { return false; } //No game title
 
         boolean whiteDeckUsed = false;
         boolean blackDeckUsed = false;
@@ -126,7 +126,7 @@ public class setupNewGame extends Activity {
             if (deckOption.getTag().equals("black") && deckOption.isChecked()) { blackDeckUsed = true; }
         }
 
-        return whiteDeckUsed&&blackDeckUsed;
+        return whiteDeckUsed && blackDeckUsed;
 
     }
 
