@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -105,6 +106,15 @@ public class mainGame extends Activity {
             final String senderId = realTimeMessage.getSenderParticipantId();
             try {
                 String message = new String(buf, "utf-8");
+
+                if (message.equals("leave")) {
+                    //Czar left - Game over
+                    mRealTimeMultiplayerClient.leave(mRoomConfig, "czar left");
+                    finish();
+                    Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+                    showScores.putExtra("scores", wonCards);
+                    startActivity(showScores);
+                }
 
                 if (message.startsWith("newblack")) {
                     //Message in format of "newblack [NEW BLACK CARD]"
@@ -250,7 +260,6 @@ public class mainGame extends Activity {
             Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
             //TODO: Fix room always being null
             if (statusCode != GamesCallbackStatusCodes.OK) {
-                mRealTimeMultiplayerClient.leave(mRoomConfig, "leaving room");
                 Log.d(TAG, "leaving");
                 finish();
                 return;
@@ -321,6 +330,41 @@ public class mainGame extends Activity {
         public void onDisconnectedFromRoom(Room room) {
             mRoomId = null;
             mRoomConfig = null;
+            if (isCzar) {
+                //Czar left - Tell others to leave
+                for (Participant p : room.getParticipants()) {
+                    try {
+                        mRealTimeMultiplayerClient.sendReliableMessage(
+                                "leave".getBytes("utf-8"),
+                                mRoomId,
+                                p.getParticipantId(),
+                                null
+                        );
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                //Not as important to the game - May be able to leave freely
+                if (room.getParticipants().size() <= 3) {
+                    //Once this player leaves, game will be too boring - end game
+                    for (Participant p : room.getParticipants()) {
+                        try {
+                            mRealTimeMultiplayerClient.sendReliableMessage(
+                                    "leave".getBytes("utf-8"),
+                                    mRoomId,
+                                    p.getParticipantId(),
+                                    null
+                            );
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    //Nobody cares if this person leaves
+                    mRealTimeMultiplayerClient.leave(mRoomConfig, "exited game");
+                }
+            }
         }
 
         // We treat most of the room update callbacks in the same way: we update our list of
@@ -455,13 +499,17 @@ public class mainGame extends Activity {
         }
         whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
         String whiteCardText = whiteButton.getText().toString();
-        mRealTimeMultiplayerClient.sendReliableMessage(
-                whiteCardText.getBytes(),
-                mRoomId,
-                czarId,
-                null
+        try {
+            mRealTimeMultiplayerClient.sendReliableMessage(
+                    whiteCardText.getBytes("utf-8"),
+                    mRoomId,
+                    czarId,
+                    null
 
-        );
+            );
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
     }
 
     private void chooseCard(View view, String senderId) {
@@ -471,20 +519,28 @@ public class mainGame extends Activity {
         //Tell everyone to show card selecting UI
         for (Participant p : mParticipants) {
 
-            mRealTimeMultiplayerClient.sendReliableMessage(
-                    ("newblack " + newBlack).getBytes(),
-                    mRoomId,
-                    p.getParticipantId(),
-                    null
-            );
+            try {
+                mRealTimeMultiplayerClient.sendReliableMessage(
+                        ("newblack " + newBlack).getBytes("utf-8"),
+                        mRoomId,
+                        p.getParticipantId(),
+                        null
+                );
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
 
             //Tell everyone who got a point
-            mRealTimeMultiplayerClient.sendReliableMessage(
-                    ("win " + senderId + " " + chosenCard.getText().toString()).getBytes(),
-                    mRoomId,
-                    chosenCard.getTag().toString(),
-                    null
-            );
+            try {
+                mRealTimeMultiplayerClient.sendReliableMessage(
+                        ("win " + senderId + " " + chosenCard.getText().toString()).getBytes("utf-8"),
+                        mRoomId,
+                        chosenCard.getTag().toString(),
+                        null
+                );
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
