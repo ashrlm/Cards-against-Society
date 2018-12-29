@@ -225,7 +225,8 @@ public class mainGame extends Activity {
                     whiteCardBtn.setTextSize(5 * scale + .5f);
                     whiteCardsLayout.addView(whiteCardBtn);
                 } else if (message.charAt(0) == 'b') {
-                    //TODO: Update main black card - Added once I do the main game UI
+                    TextView mainBlack = findViewById(R.id.blackCardMain);
+                    mainBlack.setText(message.substring(1));
                 }
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
