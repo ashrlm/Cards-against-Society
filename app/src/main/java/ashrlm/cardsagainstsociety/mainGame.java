@@ -76,10 +76,7 @@ public class mainGame extends Activity {
         whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
         blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
-        //-BD-
-        //startQuickGame();
-        runGame();
-        //-ED-
+        startQuickGame();
     }
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
