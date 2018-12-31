@@ -1,6 +1,7 @@
 package ashrlm.cardsagainstsociety;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,18 +18,17 @@ public class homepage extends Activity {
 
     private static final String TAG = "ashrlm.cas";
     private static final int RC_SIGN_IN = 9001;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
+        mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
     }
 
     private void startSignInIntent() {
-        GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
-                GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        Intent intent = signInClient.getSignInIntent();
-        startActivityForResult(intent, RC_SIGN_IN);
+        startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
     }
 
     @Override
@@ -37,22 +37,23 @@ public class homepage extends Activity {
 
         // Result returned from launching the Intent from GoogleSignInClient.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
-            // The Task returned from this call is always completed, no need to attach
-            // a listener.
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-        }
-    }
 
-    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
-        try {
-            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
-            Log.i(TAG, "signInResult: Success");
-            // Signed in successfully
-        } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.i(TAG, "signInResult:failed code=" + e.getStatusCode());
+            Task<GoogleSignInAccount> task =
+                    GoogleSignIn.getSignedInAccountFromIntent(data);
+
+            try {
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+            } catch (ApiException apiException) {
+                String message = apiException.getMessage();
+                if (message == null || message.isEmpty()) {
+                    message = "Sign-in Error";
+                }
+
+                new AlertDialog.Builder(this)
+                        .setMessage(message)
+                        .setNeutralButton(android.R.string.ok, null)
+                        .show();
+            }
         }
     }
 
