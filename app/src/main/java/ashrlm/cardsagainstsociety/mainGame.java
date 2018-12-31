@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -20,6 +19,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
+import com.google.android.gms.games.Player;
+import com.google.android.gms.games.PlayersClient;
 import com.google.android.gms.games.RealTimeMultiplayerClient;
 import com.google.android.gms.games.multiplayer.Participant;
 import com.google.android.gms.games.multiplayer.realtime.OnRealTimeMessageReceivedListener;
@@ -31,8 +32,6 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-
-import org.w3c.dom.Text;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -48,8 +47,8 @@ public class mainGame extends Activity {
     private String mRoomId;
     private static long role;
     private String mPlayerId;
-    private int MIN_PLAYERS = 1;
-    private int MAX_PLAYERS = 1;
+    private int MIN_PLAYERS = 2;
+    private int MAX_PLAYERS = 3;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private String mMyParticipantId;
@@ -57,7 +56,8 @@ public class mainGame extends Activity {
     private int numCardsRemaining = 10;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
-    private Dictionary<String, String> playedCards; //Used by the czar
+    private GoogleSignInAccount mSignedInAccount;
+    private HashMap<String, String> playedCards; //Used by the czar
     private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
     private static final int RC_WAITING_ROOM = 9007;
     private HashMap<String, String> idNames = new HashMap();
@@ -77,27 +77,42 @@ public class mainGame extends Activity {
         whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
         blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
+    }
+
+    private void onConnected(GoogleSignInAccount signedInAccount) {
+        if (mSignedInAccount!= signedInAccount) {
+
+            mSignedInAccount = signedInAccount;
+
+            mRealTimeMultiplayerClient = Games.getRealTimeMultiplayerClient(this, signedInAccount);
+            PlayersClient playersClient = Games.getPlayersClient(this, signedInAccount);
+            playersClient.getCurrentPlayer()
+                    .addOnSuccessListener(new OnSuccessListener<Player>() {
+                        @Override
+                        public void onSuccess(Player player) {
+                            mPlayerId = player.getPlayerId();
+                        }
+                    });
+        }
         startQuickGame();
     }
+
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
         // quick-start a game with 1 randomly selected opponent
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
-
-        mRealTimeMultiplayerClient = Games.getRealTimeMultiplayerClient(
-                getApplicationContext(),
-                GoogleSignIn.getLastSignedInAccount(getApplicationContext())
-        );
+        Log.d(TAG, String.valueOf(autoMatchCriteria));
 
         mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
                 .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
                 .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
-        Log.d(TAG, String.valueOf(mRoomConfig));
+        mRealTimeMultiplayerClient.create(mRoomConfig);
         mRealTimeMultiplayerClient.create(mRoomConfig);
     }
+
     //Message handler
     OnRealTimeMessageReceivedListener mOnRealTimeMessageReceivedListener = new OnRealTimeMessageReceivedListener() {
         @Override
@@ -433,7 +448,7 @@ public class mainGame extends Activity {
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                         if (task.isSuccessful()) {
                             // The signed in account is stored in the task's result.
-                            GoogleSignInAccount signedInAccount = task.getResult();
+                            onConnected(task.getResult());
                             Log.d(TAG, "Silent sign-in succeeded");
                         } else {
                             Log.e(TAG, "Silent sign-in failed");
@@ -450,6 +465,8 @@ public class mainGame extends Activity {
 
         if (isCzar) {
             //Split decks
+            wonCards = new HashMap<>();
+            playedCards = new HashMap<>();
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
             //Send decks to all participants
             for (int i = 0; i < mParticipants.size(); i++) {
