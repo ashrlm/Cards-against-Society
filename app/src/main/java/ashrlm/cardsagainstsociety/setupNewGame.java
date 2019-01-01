@@ -3,7 +3,10 @@ package ashrlm.cardsagainstsociety;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
@@ -24,33 +27,24 @@ import java.util.Arrays;
 public class setupNewGame extends AppCompatActivity {
 
     private ArrayList<CheckBox> checkboxes = new ArrayList<>();
-    private EditText gameTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_setup_new_game);
-        setTitle("Cards against Society - Game setup");
 
         LinearLayout layout = findViewById(R.id.layout_decks);
-        //Deck Title
-        gameTitle = new EditText(this);
-        gameTitle.setHint("Game title");
-        layout.addView(gameTitle);
         //Create checkboxes for deck selection
         //White boxes
         String deckColor = "white";
-        TextView header = new TextView(this);
-        header.setText("Choose playable decks");
-        header.setTextSize(18);
-        layout.addView(header);
         ArrayList<String> whiteDecks = getDecks(deckColor);
         for (String deck : whiteDecks) {
             CheckBox whiteBox = new CheckBox(this);
             whiteBox.setText(deck);
             whiteBox.setTag(deckColor);
             whiteBox.setTextSize(18);
+            CompoundButtonCompat.setButtonTintList(whiteBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
             checkboxes.add(whiteBox);
             layout.addView(whiteBox);
         } //Black boxes
@@ -63,44 +57,10 @@ public class setupNewGame extends AppCompatActivity {
             blackBox.setText(deck);
             blackBox.setTag(deckColor);
             blackBox.setTextSize(18);
+            CompoundButtonCompat.setButtonTintList(blackBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
             checkboxes.add(blackBox);
             layout.addView(blackBox);
         }
-        //Start game button
-        Button startGameBtn = new Button(this);
-        startGameBtn.setText("Start Game");
-        startGameBtn.setTextSize(21);
-        startGameBtn.setBackgroundResource(R.drawable.button);
-        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-        startGameBtn.setWidth((int) (351 * scale + .5f));
-        startGameBtn.setHeight((int) (100 * scale + .5f));
-        startGameBtn.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        LinearLayout.LayoutParams ll = (LinearLayout.LayoutParams)startGameBtn.getLayoutParams();
-        ll.gravity = Gravity.CENTER;
-        ll.setMargins(ll.leftMargin,
-                (int) (ll.topMargin+(10*scale + .5f)),
-                ll.rightMargin,
-                ll.bottomMargin);
-        startGameBtn.setLayoutParams(ll);
-        startGameBtn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (validateSettings()) {
-                            ArrayList<ArrayList<String>> decks = getSelectedDecks();
-                            Intent gotoLobby = new Intent(getApplicationContext(), mainGame.class);
-                            Bundle data = new Bundle();
-                            data.putString("gameTitle", gameTitle.getText().toString());
-                            data.putStringArrayList("whiteCards", decks.get(0));
-                            data.putStringArrayList("blackCards", decks.get(1));
-                            data.putInt("role", 0x1); //Role as card tzar - Only 1 per game
-                            gotoLobby.putExtras(data);
-                            startActivity(gotoLobby);
-                        }
-                    }
-                }
-        );
-        layout.addView(startGameBtn);
     }
 
     private ArrayList<String> getDecks (String deckColor) {
@@ -118,8 +78,20 @@ public class setupNewGame extends AppCompatActivity {
         return decks;
     }
 
+    public void tryPlay(View view) {
+        if (validateSettings()) {
+            ArrayList<ArrayList<String>> decks = getSelectedDecks();
+            Intent gotoLobby = new Intent(getApplicationContext(), mainGame.class);
+            Bundle data = new Bundle();
+            data.putStringArrayList("whiteCards", decks.get(0));
+            data.putStringArrayList("blackCards", decks.get(1));
+            data.putInt("role", 0x1); //Role as card tsar - Only 1 per game
+            gotoLobby.putExtras(data);
+            startActivity(gotoLobby);
+        }
+    }
+
     private boolean validateSettings() {
-        if (gameTitle.getText().toString().equals("")) { return false; } //No game title
 
         boolean whiteDeckUsed = false;
         boolean blackDeckUsed = false;
