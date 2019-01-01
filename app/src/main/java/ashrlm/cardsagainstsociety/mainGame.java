@@ -1,12 +1,12 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -35,13 +35,12 @@ import com.google.android.gms.tasks.Task;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class mainGame extends Activity {
+public class mainGame extends AppCompatActivity {
 
     private String czarId;
     private String mRoomId;

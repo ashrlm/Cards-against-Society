@@ -2,11 +2,9 @@ package ashrlm.cardsagainstsociety;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -23,7 +21,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class scoreSheet extends Activity {
+public class scoreSheet extends AppCompatActivity {
 
     private static final String TAG = "ashrlm.cas";
 

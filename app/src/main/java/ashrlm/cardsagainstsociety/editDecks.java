@@ -1,9 +1,9 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +15,7 @@ import android.widget.LinearLayout.LayoutParams;
 import java.io.File;
 import java.util.ArrayList;
 
-public class editDecks extends Activity {
+public class editDecks extends AppCompatActivity {
 
     private ArrayList<String> cards = new ArrayList<String>();
 
@@ -23,6 +23,7 @@ public class editDecks extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_decks);
+        setTitle("Cards against Society - Edit decks");
 
         getCards();
         int i = 0;

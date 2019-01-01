@@ -1,9 +1,9 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -20,7 +20,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class setupNewGame extends Activity {
+public class setupNewGame extends AppCompatActivity {
 
     private ArrayList<CheckBox> checkboxes = new ArrayList<>();
     private EditText gameTitle;
@@ -29,6 +29,7 @@ public class setupNewGame extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup_new_game);
+        setTitle("Cards against Society - Game setup");
 
         LinearLayout layout = findViewById(R.id.layout_decks);
         //Deck Title

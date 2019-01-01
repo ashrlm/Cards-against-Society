@@ -1,6 +1,6 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.util.DisplayMetrics;
@@ -15,7 +15,7 @@ import java.io.IOException;
 
 import static com.google.android.gms.wearable.DataMap.TAG;
 
-public class editDeck extends Activity {
+public class editDeck extends AppCompatActivity {
 
     private String deckPath;
     private String deckType;
@@ -28,6 +28,7 @@ public class editDeck extends Activity {
         deckPath = getIntent().getStringExtra("path");
         deckType = getIntent().getStringExtra("card_type");
         new_deck = findViewById(R.id.deck_title);
+        setTitle("Cards against Society - Editing " + deckPath.substring(0, deckPath.length() - 4));
         //Update height of new_deck
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

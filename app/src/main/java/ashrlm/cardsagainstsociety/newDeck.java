@@ -1,6 +1,6 @@
 package ashrlm.cardsagainstsociety;
 
-import android.app.Activity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -9,7 +9,7 @@ import android.widget.RadioButton;
 import java.io.File;
 import java.io.FileOutputStream;
 
-public class newDeck extends Activity {
+public class newDeck extends AppCompatActivity {
 
     private EditText deck_title;
     private EditText deck_content;
@@ -18,6 +18,7 @@ public class newDeck extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_deck);
+        setTitle("Cards against Society - New Deck");
         deck_title = findViewById(R.id.deck_title);
         deck_content = findViewById(R.id.deck_content);
     }
