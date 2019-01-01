@@ -6,34 +6,39 @@
     android:layout_height="match_parent"
     tools:context=".newDeck">
 
-    <EditText
+    <android.support.v7.widget.AppCompatEditText
         android:id="@+id/deck_title"
-        android:layout_width="415dp"
+        android:layout_width="378dp"
         android:layout_height="49dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
+        android:background="@null"
         android:gravity="top|start"
         android:hint="Deck Title"
         android:scrollbars="vertical"
         android:scrollHorizontally="true"
+        android:textCursorDrawable="@null"
         app:layout_constraintTop_toBottomOf="@+id/radioGroup"
-        tools:layout_editor_absoluteX="0dp" />
+        tools:layout_editor_absoluteX="16dp" />
 
-    <EditText
+    <android.support.v7.widget.AppCompatEditText
         android:id="@+id/deck_content"
-        android:layout_width="match_parent"
+        android:layout_width="378dp"
         android:layout_height="0dp"
         android:layout_marginTop="18dp"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="10dp"
+        android:background="@null"
         android:gravity="top|start"
         android:hint="Cards in deck"
         android:scrollbars="vertical"
         android:scrollHorizontally="true"
+        android:textCursorDrawable="@null"
         app:layout_constraintBottom_toTopOf="@+id/button3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/deck_title"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="1.0" />
 
-    <Button
+    <android.support.v7.widget.AppCompatButton
         android:id="@+id/button3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -57,20 +62,22 @@
         android:layout_height="65dp"
         tools:layout_editor_absoluteX="2dp">
 
-        <RadioButton
+        <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/radioWhite"
             android:layout_width="415dp"
             android:layout_height="wrap_content"
             android:text="White"
+            android:buttonTint="@color/deckColorRadio"
             tools:layout_editor_absoluteX="214dp"
             tools:layout_editor_absoluteY="0dp" />
 
-        <RadioButton
+        <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/radioBlack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Black"
+            android:buttonTint="@color/deckColorRadio"
             tools:layout_editor_absoluteX="214dp"
             tools:layout_editor_absoluteY="0dp" />
     </RadioGroup>
