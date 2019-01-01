@@ -1,10 +1,14 @@
 package ashrlm.cardsagainstsociety;
 
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -12,6 +16,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 public class homepage extends AppCompatActivity {
@@ -25,9 +30,35 @@ public class homepage extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        setSupportActionBar(myToolbar);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu )
+    {
+        getMenuInflater().inflate( R.menu.menu, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_logout:
+                logout();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
     }
 
     private void startSignInIntent() {
+        Log.d(TAG, "startSignInIntent()");
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
     }
 
@@ -43,24 +74,38 @@ public class homepage extends AppCompatActivity {
 
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
+                Log.d(TAG, "Signed in as: " + account.getDisplayName());
             } catch (ApiException apiException) {
                 String message = apiException.getMessage();
                 if (message == null || message.isEmpty()) {
-                    message = "Sign-in Error";
                     Log.e(TAG, "Sign-in Error");
                 }
-
-                new AlertDialog.Builder(this)
-                        .setMessage(message)
-                        .setNeutralButton(android.R.string.ok, null)
-                        .show();
             }
         }
+    }
+
+    private void logout () {
+        Log.d(TAG, "signOut()");
+
+        mGoogleSignInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signOut(): success");
+                            onResume();
+                        } else {
+                            Log.d(TAG, "signOut(): failed");
+                        }
+                    }
+                });
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume()");
         if (GoogleSignIn.getLastSignedInAccount(homepage.this) == null) {
             startSignInIntent();
         }
