@@ -1,8 +1,8 @@
 package ashrlm.cardsagainstsociety;
 
+import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -19,6 +19,8 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+//TODO: add new status bar to all other activities (the one with logout)
+
 public class homepage extends AppCompatActivity {
 
     private static final String TAG = "ashrlm.cas";
@@ -28,10 +30,12 @@ public class homepage extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_homepage);
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
+        onResume(); //Signin
     }
 
     @Override
@@ -59,6 +63,8 @@ public class homepage extends AppCompatActivity {
 
     private void startSignInIntent() {
         Log.d(TAG, "startSignInIntent()");
+        //TODO: Mostly unrelated to this specific method but when the oAuth consent screen is displayed, it takes up so much of the screen
+        //      That I can't click "Allow". Fix probably in Google API console.
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
     }
 

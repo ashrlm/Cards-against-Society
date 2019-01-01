@@ -1,6 +1,7 @@
 package ashrlm.cardsagainstsociety;
 
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -70,6 +71,7 @@ public class mainGame extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         signInSilently();
         super.onCreate(savedInstanceState);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_game_lobby);
         Intent intentFromHomepage = getIntent();
         role = intentFromHomepage.getIntExtra("role", 0x0);

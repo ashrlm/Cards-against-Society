@@ -1,5 +1,6 @@
 package ashrlm.cardsagainstsociety;
 
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
@@ -24,6 +25,7 @@ public class editDeck extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_edit_deck);
         deckPath = getIntent().getStringExtra("path");
         deckType = getIntent().getStringExtra("card_type");
