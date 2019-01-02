@@ -4,8 +4,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.MimeTypeMap;
@@ -13,19 +18,28 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
 import java.io.File;
 import java.util.ArrayList;
 
 public class editDecks extends AppCompatActivity {
 
     private ArrayList<String> cards = new ArrayList<String>();
+    private final String TAG = "ashrlm.cas";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_edit_decks);
-        setTitle("Cards against Society - Edit decks");
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("Cards against Society - Edit decks");
+        setSupportActionBar(myToolbar);
 
         getCards();
         int i = 0;
@@ -118,9 +132,9 @@ public class editDecks extends AppCompatActivity {
         LayoutParams ll = (LayoutParams)editDeckBtn.getLayoutParams();
         ll.gravity = Gravity.CENTER;
         ll.setMargins(ll.leftMargin,
-                (int) (ll.topMargin+(5*scale + .5f)),
+                (int) (ll.topMargin+(10*scale + .5f)),
                 ll.rightMargin,
-                (int) (ll.bottomMargin+(5*scale + .5f)));
+                ll.bottomMargin);
         editDeckBtn.setLayoutParams(ll);
 
         //add button to the layout
@@ -135,5 +149,46 @@ public class editDecks extends AppCompatActivity {
                 cards.add(card);
             }
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu ) {
+        getMenuInflater().inflate( R.menu.menu, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_logout:
+                logout();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    private void logout () {
+        Log.d(TAG, "signOut()");
+
+        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        mGoogleSignInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signOut(): success");
+                            finish();
+                        } else {
+                            Log.d(TAG, "signOut(): failed");
+                        }
+                    }
+                });
     }
 }

@@ -1,13 +1,24 @@
 package ashrlm.cardsagainstsociety;
 
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,7 +41,9 @@ public class editDeck extends AppCompatActivity {
         deckPath = getIntent().getStringExtra("path");
         deckType = getIntent().getStringExtra("card_type");
         new_deck = findViewById(R.id.deck_title);
-        setTitle("Cards against Society - Editing " + deckPath.substring(0, deckPath.length() - 4));
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("Cards against Society - Editing " + deckPath.substring(0, deckPath.length() - 4));
+        setSupportActionBar(myToolbar);
         //Update height of new_deck
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -54,6 +67,47 @@ public class editDeck extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu ) {
+        getMenuInflater().inflate( R.menu.menu, menu );
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.action_logout:
+                logout();
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
+    private void logout () {
+        Log.d(TAG, "signOut()");
+
+        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
+        mGoogleSignInClient.signOut().addOnCompleteListener(this,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signOut(): success");
+                            finish();
+                        } else {
+                            Log.d(TAG, "signOut(): failed");
+                        }
+                    }
+                });
     }
 
     public void updateDeck(View v) {
