@@ -38,10 +38,9 @@
     <android.support.v7.widget.AppCompatEditText
         android:id="@+id/deck_content"
         android:layout_width="378dp"
-        android:layout_height="348dp"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="16dp"
+        android:layout_height="28dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="17dp"
         android:background="@null"
         android:gravity="top|start"
         android:hint="Cards in deck"
@@ -53,31 +52,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/deck_title" />
 
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/button3"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="471dp"
-        android:layout_marginEnd="10dp"
-        android:background="@drawable/button"
-        android:onClick="createDeck"
-        android:text="Create deck"
-        android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/deck_title"
-        app:layout_constraintVertical_bias="1.0" />
-
     <RadioGroup
         android:id="@+id/radioGroup"
-        android:layout_width="385dp"
+        android:layout_width="378dp"
         android:layout_height="61dp"
-        android:layout_marginStart="17dp"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
-        android:layout_marginEnd="9dp"
+        android:layout_marginEnd="17dp"
         android:layout_marginBottom="14dp"
         app:layout_constraintBottom_toTopOf="@+id/deck_title"
         app:layout_constraintEnd_toEndOf="parent"
@@ -86,7 +67,7 @@
 
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/radioWhite"
-            android:layout_width="415dp"
+            android:layout_width="378dp"
             android:layout_height="wrap_content"
             android:buttonTint="@color/deckColorRadio"
             android:text="White"
@@ -105,7 +86,7 @@
     </RadioGroup>
 
     <Button
-        android:id="@+id/runGameBtn"
+        android:id="@+id/createDeckBtn"
         android:layout_width="378dp"
         android:layout_height="88dp"
         android:layout_marginStart="16dp"

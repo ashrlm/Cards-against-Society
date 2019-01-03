@@ -13,35 +13,41 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat" />
 
     <android.support.constraint.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:paddingBottom="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.391"
+        tools:layout_editor_absoluteX="0dp">
 
         <Button
             android:id="@+id/newGameButton"
-            android:layout_width="351dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
             android:background="@drawable/button"
             android:onClick="newGameButton"
             android:text="NEW GAME"
             android:textSize="30sp"
             android:visibility="visible"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
             android:id="@+id/joinGameButton"
-            android:layout_width="351dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="60dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="30dp"
             android:background="@drawable/button"
             android:onClick="joinGameButton"
             android:text="JOIN GAME"
@@ -54,9 +60,11 @@
 
         <Button
             android:id="@+id/editDecksButton"
-            android:layout_width="351dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="60dp"
+            android:layout_marginEnd="30dp"
             android:background="@drawable/button"
             android:onClick="editDecksButton"
             android:text="EDIT DECKS"
@@ -68,12 +76,14 @@
 
         <Button
             android:id="@+id/creditsButton"
-            android:layout_width="351dp"
+            android:layout_width="match_parent"
             android:layout_height="100dp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="60dp"
-            android:layout_marginBottom="60sp"
+            android:layout_marginEnd="30dp"
             android:background="@drawable/button"
             android:onClick="creditsButton"
+            android:paddingBottom="5dp"
             android:text="CREDITS"
             android:textSize="30sp"
             android:visibility="visible"

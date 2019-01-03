@@ -1,10 +1,7 @@
 package ashrlm.cardsagainstsociety;
 
-import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -36,7 +33,7 @@ public class homepage extends AppCompatActivity {
         mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        onResume(); //Signin
+        onResume(); //Sign in
     }
 
     @Override
