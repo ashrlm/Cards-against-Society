@@ -1,7 +1,10 @@
 package ashrlm.cardsagainstsociety;
 
+import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -18,8 +21,6 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-
-//TODO: add new status bar to all other activities (the one with logout)
 
 public class homepage extends AppCompatActivity {
 

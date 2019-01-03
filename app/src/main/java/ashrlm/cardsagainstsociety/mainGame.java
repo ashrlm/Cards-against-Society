@@ -1,5 +1,6 @@
 package ashrlm.cardsagainstsociety;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
@@ -7,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -46,12 +48,11 @@ import java.util.Random;
 
 public class mainGame extends AppCompatActivity {
 
+    private Room mRoom;
     private String czarId;
     private String mRoomId;
     private static long role;
     private String mPlayerId;
-    private int MIN_PLAYERS = 2;
-    private int MAX_PLAYERS = 3;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private String mMyParticipantId;
@@ -123,7 +124,7 @@ public class mainGame extends AppCompatActivity {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.cancel();
-                            finish();
+                            leaveRoomPrep(mRoom);
                         }
                     });
 
@@ -137,6 +138,8 @@ public class mainGame extends AppCompatActivity {
 
             AlertDialog alert11 = builder1.create();
             alert11.show();
+        } else {
+            leaveRoomPrep(mRoom);
         }
     }
 
@@ -180,6 +183,8 @@ public class mainGame extends AppCompatActivity {
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
         // quick-start a game with 1 randomly selected opponent
+        int MIN_PLAYERS = 2;
+        int MAX_PLAYERS = 3;
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
         Log.d(TAG, String.valueOf(autoMatchCriteria));
@@ -360,6 +365,7 @@ public class mainGame extends AppCompatActivity {
                 return;
             }
             mRoomId = room.getRoomId();
+            mRoom = room;
             showWaitingRoom(room);
             Log.d(TAG, "ROOM: " + room);
         }
@@ -367,6 +373,7 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onJoinedRoom(int statusCode, @Nullable Room room) {
             Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
+            mRoom = room;
             showWaitingRoom(room);
         }
 
@@ -390,6 +397,7 @@ public class mainGame extends AppCompatActivity {
         if (mParticipants != null) {
             //TODO: Update room depending on status
         }
+        mRoom = room;
     }
 
     void showWaitingRoom(Room room) {
@@ -425,44 +433,7 @@ public class mainGame extends AppCompatActivity {
         public void onDisconnectedFromRoom(Room room) {
             mRoomId = null;
             mRoomConfig = null;
-            if (isCzar) {
-                //Czar left - Tell others to leave
-                for (Participant p : room.getParticipants()) {
-                    try {
-                        mRealTimeMultiplayerClient.sendReliableMessage(
-                                "leave".getBytes("utf-8"),
-                                mRoomId,
-                                p.getParticipantId(),
-                                null
-                        );
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                }
-            } else {
-                //Not as important to the game - May be able to leave freely
-                if (room.getParticipants().size() <= 3) {
-                    //Once this player leaves, game will be too boring - end game
-                    for (Participant p : room.getParticipants()) {
-                        try {
-                            mRealTimeMultiplayerClient.sendReliableMessage(
-                                    "leave".getBytes("utf-8"),
-                                    mRoomId,
-                                    p.getParticipantId(),
-                                    null
-                            );
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    //Nobody cares if this person leaves
-                    mRealTimeMultiplayerClient.leave(mRoomConfig, "exited game");
-                    finish();
-                    Intent goHome = new Intent(getApplicationContext(), homepage.class);
-                    startActivity(goHome);
-                }
-            }
+            finish();
         }
 
         // We treat most of the room update callbacks in the same way: we update our list of
@@ -537,6 +508,45 @@ public class mainGame extends AppCompatActivity {
                 });
     }
 
+    private void leaveRoomPrep(Room room) {
+        if (mPlaying) {
+            //Tell others players what to do after we leave
+            if (isCzar) {
+                //Czar left - Tell others to leave
+                for (Participant p : room.getParticipants()) {
+                    try {
+                        mRealTimeMultiplayerClient.sendReliableMessage(
+                                "leave".getBytes("utf-8"),
+                                mRoomId,
+                                p.getParticipantId(),
+                                null
+                        );
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            } else {
+                //Not as important to the game - May be able to leave freely
+                if (room.getParticipants().size() <= 3) {
+                    //Once this player leaves, game will be too boring - end game
+                    for (Participant p : room.getParticipants()) {
+                        try {
+                            mRealTimeMultiplayerClient.sendReliableMessage(
+                                    "leave".getBytes("utf-8"),
+                                    mRoomId,
+                                    p.getParticipantId(),
+                                    null
+                            );
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+        mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId);
+    }
+
     //------------------------------------Main Game logic-------------------------------------------
 
     private void runGame () {
@@ -544,6 +554,7 @@ public class mainGame extends AppCompatActivity {
         setContentView(R.layout.main_game);
 
         mPlaying = true;
+
         if (isCzar) {
             //Split decks
             wonCards = new HashMap<>();
