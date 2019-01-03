@@ -108,6 +108,38 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mPlaying) {
+            AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
+            builder1.setMessage("If you exit this game, you will not be able to rejoin.");
+            if (isCzar) {
+                builder1.setMessage("If you exit this game, it will be cancelled. ");
+            }
+            builder1.setCancelable(true);
+
+            builder1.setPositiveButton(
+                    "Exit Game",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                            finish();
+                        }
+                    });
+
+            builder1.setNeutralButton(
+                    "Cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
+
+            AlertDialog alert11 = builder1.create();
+            alert11.show();
+        }
+    }
+
     private void logout () {
         Log.d(TAG, "signOut()");
 
@@ -511,6 +543,7 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
 
+        mPlaying = true;
         if (isCzar) {
             //Split decks
             wonCards = new HashMap<>();
