@@ -1,4 +1,4 @@
-package ashrlm.cardsagainstsociety;
+package ml.ashrlm.cardsagainstsociety;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -11,13 +11,10 @@ import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 

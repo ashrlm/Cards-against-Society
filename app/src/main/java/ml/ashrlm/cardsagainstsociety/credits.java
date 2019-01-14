@@ -1,6 +1,5 @@
-package ashrlm.cardsagainstsociety;
+package ml.ashrlm.cardsagainstsociety;
 
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;

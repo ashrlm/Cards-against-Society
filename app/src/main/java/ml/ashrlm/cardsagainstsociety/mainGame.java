@@ -1,4 +1,4 @@
-package ashrlm.cardsagainstsociety;
+package ml.ashrlm.cardsagainstsociety;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,8 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -58,6 +56,7 @@ public class mainGame extends AppCompatActivity {
     private String mMyParticipantId;
     private boolean mPlaying = false;
     private int numCardsRemaining = 10;
+    private int returnedFromWaitingUi = 0; //Used for weird behaviour going back from waiting room UI
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private GoogleSignInAccount mSignedInAccount;
@@ -69,14 +68,12 @@ public class mainGame extends AppCompatActivity {
     private ArrayList<String> blackCards = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         signInSilently();
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_game_lobby);
+        setContentView(  R.layout.activity_game_lobby);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society - Loading lobby");
         setSupportActionBar(myToolbar);
@@ -85,28 +82,8 @@ public class mainGame extends AppCompatActivity {
         whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
         blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
-    }
+        //Handle odd behaviour with back button - Remove when custom UI is implemented
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu ) {
-        getMenuInflater().inflate( R.menu.menu, menu );
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-
-            case R.id.action_logout:
-                logout();
-                return true;
-
-            default:
-                // If we got here, the user's action was not recognized.
-                // Invoke the superclass to handle it.
-                return super.onOptionsItemSelected(item);
-
-        }
     }
 
     @Override
@@ -143,25 +120,6 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private void logout () {
-        Log.d(TAG, "signOut()");
-
-        GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
-        mGoogleSignInClient.signOut().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "signOut(): success");
-                            finish();
-                        } else {
-                            Log.d(TAG, "signOut(): failed");
-                        }
-                    }
-                });
-    }
-
     private void onConnected(GoogleSignInAccount signedInAccount) {
         if (mSignedInAccount!= signedInAccount) {
 
@@ -184,7 +142,7 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "Started quick-game");
         // quick-start a game with 1 randomly selected opponent
         int MIN_PLAYERS = 2;
-        int MAX_PLAYERS = 3;
+        int MAX_PLAYERS = 7;
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
         Log.d(TAG, String.valueOf(autoMatchCriteria));
@@ -394,9 +352,6 @@ public class mainGame extends AppCompatActivity {
         if (room != null) {
             mParticipants = room.getParticipants();
         }
-        if (mParticipants != null) {
-            //TODO: Update room depending on status
-        }
         mRoom = room;
     }
 
@@ -407,7 +362,15 @@ public class mainGame extends AppCompatActivity {
                     public void onSuccess(Intent intent) {
                         // show waiting room UI
                         Log.d(TAG, "Waiting room UI shown");
+                        if (returnedFromWaitingUi == 1) {
+                            returnedFromWaitingUi = 2;
+                        } else {
+                            returnedFromWaitingUi = 1;
+                        }
                         startActivityForResult(intent, RC_WAITING_ROOM);
+                        /*NOTE: In time, this will be updated to use a custom UI that better fits
+                                the rest of the app. Do not worry about the weird behaviour of back,
+                                this will be fixed when a custom waiting room UI is implemented.*/
                     }
                 });
     }
@@ -545,6 +508,13 @@ public class mainGame extends AppCompatActivity {
             }
         }
         mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        if (returnedFromWaitingUi == 2) {
+            finish();
+        }
     }
 
     //------------------------------------Main Game logic-------------------------------------------

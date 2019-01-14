@@ -1,18 +1,17 @@
-package ashrlm.cardsagainstsociety;
+package ml.ashrlm.cardsagainstsociety;
 
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.constraint.ConstraintLayout;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -21,52 +20,24 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
-import static com.google.android.gms.wearable.DataMap.TAG;
+public class newDeck extends AppCompatActivity {
 
-public class editDeck extends AppCompatActivity {
-
-    private String deckPath;
-    private String deckType;
-    private EditText new_deck;
+    private EditText deck_title;
+    private EditText deck_content;
+    private String TAG = "ashrlm.cas";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_edit_deck);
-        deckPath = getIntent().getStringExtra("path");
-        deckType = getIntent().getStringExtra("card_type");
-        new_deck = findViewById(R.id.deck_title);
+        setContentView(R.layout.activity_new_deck);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        myToolbar.setTitle("Cards against Society - Editing " + deckPath.substring(0, deckPath.length() - 4));
+        myToolbar.setTitle("Cards against Society - New Deck");
         setSupportActionBar(myToolbar);
-        //Update height of new_deck
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        new_deck.setLayoutParams (new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, (int) (height * .92)));
-        //Read data to add to new_deck
-
-        FileInputStream fis;
-        try {
-            fis = new FileInputStream(getFilesDir().getPath() + '/' + deckType + '/' + deckPath);
-            StringBuffer fileContent = new StringBuffer();
-
-            byte[] buffer = new byte[1024];
-            int n;
-
-            while ((n = fis.read(buffer)) != -1)
-            {
-                fileContent.append(new String(buffer, 0, n));
-            }
-            new_deck.setText(fileContent);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        deck_title = findViewById(R.id.deck_title);
+        deck_content = findViewById(R.id.deck_content);
     }
 
     @Override
@@ -110,25 +81,60 @@ public class editDeck extends AppCompatActivity {
                 });
     }
 
-    public void updateDeck(View v) {
+    public void createDeck(View view) {
+        String deckPath;
+        String deckContent;
+        String deckFolder;
 
-        if (new_deck.getText() == null || new_deck.getText().toString().isEmpty()) {
-            return; //Do nothing - Empty
+        RadioButton white_deck = findViewById(R.id.radioWhite);
+        RadioButton black_deck = findViewById(R.id.radioBlack);
+
+        String deckTitle = deck_title.getText().toString();
+        String deckCards = deck_content.getText().toString();
+        if (deckTitle != null || deckCards.isEmpty()) {
+            if (!deckTitle.endsWith(".txt")) {
+                deckTitle += ".txt";
+            }
+        } else {
+            return; //No title - Do nothing
         }
 
-        String fileContents = new_deck.getText().toString();
+        if (deckCards == null || deckCards.isEmpty()) {
+            return; //No cards - Do nothing
+        }
+
+        deckContent = deck_content.getText().toString();
+
+        if (white_deck.isChecked()) {
+            deckPath = deckTitle;
+            deckFolder = "/white";
+            File white_dir = new File(getFilesDir(), "white");
+            if (!white_dir.exists()) {
+                white_dir.mkdirs();
+            }
+        } else if (black_deck.isChecked()) {
+            deckPath = deckTitle;
+            deckFolder = "/black";
+            File black_dir = new File(getFilesDir(), "black");
+            if (!black_dir.exists()) {
+                black_dir.mkdirs();
+            }
+        } else {
+            //Nothing selected - Do nothing
+            return;
+        }
+
         FileOutputStream outputStream;
 
         try {
-            new File("test");
-            outputStream = new FileOutputStream(new File(String.format("%s/%s%s", getFilesDir().getPath(), deckType, deckPath)));
-            outputStream.write(fileContents.getBytes());
+            File new_deck = new File(getFilesDir().getPath() + deckFolder, deckPath);
+            outputStream = new FileOutputStream(new_deck);
+            outputStream.write(deckContent.getBytes());
             outputStream.close();
-            finish();
         } catch (Exception e) {
-            Log.e(TAG, "Could not save to file. Error code: " + e + " DECKPATH: " + deckPath);
             e.printStackTrace();
         }
+        finish();
     }
 
 }

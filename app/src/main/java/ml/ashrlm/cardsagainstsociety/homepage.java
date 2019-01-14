@@ -1,4 +1,4 @@
-package ashrlm.cardsagainstsociety;
+package ml.ashrlm.cardsagainstsociety;
 
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
