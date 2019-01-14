@@ -56,7 +56,7 @@ public class mainGame extends AppCompatActivity {
     private String mMyParticipantId;
     private boolean mPlaying = false;
     private int numCardsRemaining = 10;
-    private int returnedFromWaitingUi = 0; //Used for weird behaviour going back from waiting room UI
+    private boolean returnedFromWaitingUi = false; //Used until custom waiting room UI
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private GoogleSignInAccount mSignedInAccount;
@@ -152,7 +152,6 @@ public class mainGame extends AppCompatActivity {
                 .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
                 .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
-        mRealTimeMultiplayerClient.create(mRoomConfig);
         mRealTimeMultiplayerClient.create(mRoomConfig);
     }
 
@@ -362,11 +361,7 @@ public class mainGame extends AppCompatActivity {
                     public void onSuccess(Intent intent) {
                         // show waiting room UI
                         Log.d(TAG, "Waiting room UI shown");
-                        if (returnedFromWaitingUi == 1) {
-                            returnedFromWaitingUi = 2;
-                        } else {
-                            returnedFromWaitingUi = 1;
-                        }
+                        returnedFromWaitingUi = true;
                         startActivityForResult(intent, RC_WAITING_ROOM);
                         /*NOTE: In time, this will be updated to use a custom UI that better fits
                                 the rest of the app. Do not worry about the weird behaviour of back,
@@ -512,7 +507,7 @@ public class mainGame extends AppCompatActivity {
 
     protected void onResume() {
         super.onResume();
-        if (returnedFromWaitingUi == 2) {
+        if (returnedFromWaitingUi) {
             finish();
         }
     }
