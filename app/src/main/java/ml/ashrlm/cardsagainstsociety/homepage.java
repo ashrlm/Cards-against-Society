@@ -60,8 +60,6 @@ public class homepage extends AppCompatActivity {
 
     private void startSignInIntent() {
         Log.d(TAG, "startSignInIntent()");
-        //TODO: Mostly unrelated to this specific method but when the oAuth consent screen is displayed, it takes up so much of the screen
-        //      That I can't click "Allow". Fix probably in Google API console.
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
     }
 

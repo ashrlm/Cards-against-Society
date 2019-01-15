@@ -56,13 +56,13 @@ public class mainGame extends AppCompatActivity {
     private String mMyParticipantId;
     private boolean mPlaying = false;
     private int numCardsRemaining = 10;
-    private boolean returnedFromWaitingUi = false; //Used until custom waiting room UI
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
-    private GoogleSignInAccount mSignedInAccount;
     private HashMap<String, String> playedCards; //Used by the czar
-    private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
+    private GoogleSignInAccount mSignedInAccount;
     private static final int RC_WAITING_ROOM = 9007;
+    private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
+    private boolean returnedFromWaitingUi = false; //Used until custom waiting room UI
     private HashMap<String, String> idNames = new HashMap();
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
@@ -82,17 +82,16 @@ public class mainGame extends AppCompatActivity {
         whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
         blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
-        //Handle odd behaviour with back button - Remove when custom UI is implemented
-
     }
 
     @Override
     public void onBackPressed() {
+        Log.d(TAG, "onBackPressed");
         if (mPlaying) {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
             builder1.setMessage("If you exit this game, you will not be able to rejoin.");
             if (isCzar) {
-                builder1.setMessage("If you exit this game, it will be cancelled. ");
+                builder1.setMessage("If you exit this game, it will be cancelled.");
             }
             builder1.setCancelable(true);
 
@@ -141,7 +140,7 @@ public class mainGame extends AppCompatActivity {
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
         // quick-start a game with 1 randomly selected opponent
-        int MIN_PLAYERS = 2;
+        int MIN_PLAYERS = 1;
         int MAX_PLAYERS = 7;
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
@@ -165,6 +164,7 @@ public class mainGame extends AppCompatActivity {
                 String message = new String(buf, "utf-8");
 
                 if (message.equals("leave")) {
+                    Log.d(TAG, "leaveMsgReceived");
                     //Czar left - Game over
                     mRealTimeMultiplayerClient.leave(mRoomConfig, "czar left");
                     finish();
@@ -210,10 +210,12 @@ public class mainGame extends AppCompatActivity {
                             newWinsMsg += ("    " + cardWon + "\n");
                         }
                     }
+
                     winsText.setText(newWinsMsg);
 
                     //Check if game is over
                     if (numCardsRemaining == 0) {
+                        Log.d(TAG, "Out of Cards");
                         Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
                         showScores.putExtra("scores", wonCards);
                         finish();
@@ -270,7 +272,7 @@ public class mainGame extends AppCompatActivity {
                 } else if (message.charAt(0) == 'w') {
                     czarId = senderId;
                     //Received white card from czar - add to list of available cards
-                    whiteCards.remove(message);
+                    if (whiteCards == null) { whiteCards = new ArrayList<>(); }
                     whiteCards.add(message.subSequence(1, message.length()-1).toString());
                     LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
                     //Add deck buttons
@@ -315,7 +317,6 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onRoomCreated(int statusCode, @Nullable Room room) {
             Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
-            //TODO: Fix room always being null
             if (statusCode != GamesCallbackStatusCodes.OK) {
                 Log.d(TAG, "leaving");
                 finish();
@@ -389,6 +390,7 @@ public class mainGame extends AppCompatActivity {
         // Called when we get disconnected from the room. We return to the main screen.
         @Override
         public void onDisconnectedFromRoom(Room room) {
+            Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
             mRoomId = null;
             mRoomConfig = null;
             finish();
@@ -473,6 +475,8 @@ public class mainGame extends AppCompatActivity {
                 //Czar left - Tell others to leave
                 for (Participant p : room.getParticipants()) {
                     try {
+                        Log.d(TAG, "leaveMsg sent");
+
                         mRealTimeMultiplayerClient.sendReliableMessage(
                                 "leave".getBytes("utf-8"),
                                 mRoomId,
@@ -481,6 +485,7 @@ public class mainGame extends AppCompatActivity {
                         );
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
+                        Log.e(TAG, String.valueOf(e));
                     }
                 }
             } else {
@@ -489,6 +494,7 @@ public class mainGame extends AppCompatActivity {
                     //Once this player leaves, game will be too boring - end game
                     for (Participant p : room.getParticipants()) {
                         try {
+                            Log.d(TAG, "leaveMsg sent");
                             mRealTimeMultiplayerClient.sendReliableMessage(
                                     "leave".getBytes("utf-8"),
                                     mRoomId,
@@ -497,17 +503,20 @@ public class mainGame extends AppCompatActivity {
                             );
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
+                            Log.e(TAG, String.valueOf(e));
                         }
                     }
                 }
             }
         }
+        Log.e(TAG, "roomLeft");
         mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId);
     }
 
     protected void onResume() {
         super.onResume();
-        if (returnedFromWaitingUi) {
+        if (returnedFromWaitingUi && !mPlaying) {
+            Log.d(TAG, "returnedFromWaitingUI");
             finish();
         }
     }
@@ -515,10 +524,11 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     private void runGame () {
+        Log.d(TAG, String.valueOf(isCzar));
+        mPlaying = true;
+
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
-
-        mPlaying = true;
 
         if (isCzar) {
             //Split decks
@@ -530,12 +540,14 @@ public class mainGame extends AppCompatActivity {
 
                 //Add participant name/id to deck
                 idNames.put(mParticipants.get(i).getParticipantId(), mParticipants.get(i).getDisplayName());
+                Log.d(TAG, "partNIdAdded");
 
-                if (mParticipants.get(i).getParticipantId() == mMyParticipantId) { continue; }
+                if (mParticipants.get(i).getParticipantId().equals(mMyParticipantId)) { continue; }
 
                 for (String card : whiteCardsSplit.get(i)) {
                     card = "w" + card;
                     try {
+                        Log.d(TAG, "sentWhiteCard");
                         mRealTimeMultiplayerClient.sendReliableMessage(
                                 card.getBytes("utf-8"),
                                 mRoomId,
@@ -549,6 +561,7 @@ public class mainGame extends AppCompatActivity {
                 }
             }
         }
+        Log.d(TAG, "runGame(); finished");
     }
 
     private ArrayList<ArrayList<String>> splitDeck (ArrayList<String> deck) {
