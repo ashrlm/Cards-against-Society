@@ -177,146 +177,23 @@ public class mainGame extends AppCompatActivity {
                 } else if (message.startsWith("newblack")) {
                     Log.d(TAG, "newblack: " + message.substring(9));
                     //Message in format of "newblack [NEW BLACK CARD]"
-                    //Update UI
-                    TextView blackPrompt = findViewById(R.id.blackCardMain);
-                    blackPrompt.setText(message.substring(9));
+                    updateBlack(message.substring(9));
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
                     //Message in format of win [text on card]
-                    String wonCard = message.substring(4);
-                    Log.d(TAG, "wonCard " + wonCard);
-                    //Update wins hashmap
-                    if (wonCards == null) { wonCards = new HashMap<>(); }
-                    if (wonCards.containsKey(idNames.get(senderId))) {
-                        //Update scores of existing participant
-                        wonCards.get(idNames.get(senderId)).add(wonCard);
-                    } else {
-                        //Add participant to scores
-                        ArrayList<String> newWinTmp = new ArrayList<>();
-                        newWinTmp.add(wonCard);
-                        Log.d(TAG, "idNames.get(senderId) " + idNames.get(senderId));
-                        wonCards.put(idNames.get(senderId), newWinTmp);
-                    }
+                    updateWins(message.substring(4), senderId);
 
-                    //Update tags on own white cards
-                    LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
-                    for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
-                        if (! (Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
-                            whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
-                            break;
-                        }
-                    }
-
-                    //Update list of wins
-                    TextView winsText = findViewById(R.id.winsScrolledText);
-                    String newWinsMsg = "SCORES\n\n";
-                    for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
-                        Log.d(TAG, win.getKey());
-                        Log.d(TAG, "idNames.get(win.getKey()) " + idNames.get(win.getKey()));
-                        newWinsMsg += (idNames.get(win.getKey()) + "\n");
-                        for (String cardWon : win.getValue()) {
-                            Log.d(TAG, "cardWon " + cardWon);
-                            newWinsMsg += ("    " + cardWon + "\n");
-                        }
-                    }
-
-                    winsText.setText(newWinsMsg);
-
-                    //Check if game is over
-                    if (numCardsRemaining == 0) {
-                        Log.d(TAG, "Out of Cards");
-                        Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                        showScores.putExtra("scores", wonCards);
-                        finish();
-                        startActivity(showScores);
-                    }
-                    numCardsRemaining--;
-                } else if (isCzar) {
+                } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
                     //White card sent to czar by player
-                    playedCards.put(senderId, message);
-                    LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
-                    found: {
-                        for (int i = 0; i < whitesPlayed.getChildCount(); i++) {
-                            if (whitesPlayed.getChildAt(i).getTag().equals(senderId)) {
-                                Button btnToOverwrite = (Button) whitesPlayed.getChildAt(i);
-                                if (btnToOverwrite.getTag().equals(senderId)) {
-                                    //Overwrite existing button
-                                    btnToOverwrite.setText(message);
-                                    break found;
-                                }
-                            }
-                        }
-                        //This player hasn't played yet - Add their card
-                        LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
-                        //Add deck buttons
-                        Button playedWhiteCardBtn = new Button(getApplicationContext());
-                        playedWhiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
-                        playedWhiteCardBtn.setText(message);
-                        playedWhiteCardBtn.setTag(senderId);
-                        playedWhiteCardBtn.setOnClickListener(
-                                new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        chooseCard(v);
-                                    }
-                                }
-                        );
-                        //Style button
-                        playedWhiteCardBtn.setBackgroundResource(R.drawable.white_card);
-                        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-                        playedWhiteCardBtn.setWidth((int) (100 * scale + .5f));
-                        playedWhiteCardBtn.setHeight((int) (100 * scale + .5f));
-                        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) playedWhiteCardBtn.getLayoutParams();
-                        ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
-                                ll.topMargin,
-                                (int) (ll.rightMargin + (3 * scale + .5f)),
-                                (int) (ll.bottomMargin + (5 * scale + .5f)));
-                        playedWhiteCardBtn.setLayoutParams(ll);
-                        playedWhiteCardBtn.setSingleLine(false);
-                        playedWhiteCardBtn.setTextColor(Color.DKGRAY);
-                        playedWhiteCardBtn.setTextSize(5 * scale + .5f);
-                        whiteCardsLayout.addView(playedWhiteCardBtn);
-                    }
+                    updateCzarWhite(message.substring(2), senderId);
+
                 } else if (message.charAt(0) == 'w') {
                     Log.d(TAG, "whiteFromCzar: " + message.substring(1));
                     czarId = senderId;
-                    //Received white card from czar - add to list of available cards
-                    if (whiteCards == null) { whiteCards = new ArrayList<>(); }
-                    whiteCards.add(message.substring(1));
-                    LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
-                    //Add deck buttons
-                    Button whiteCardBtn = new Button(getApplicationContext());
-                    whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
-                    whiteCardBtn.setText(message.substring(1));
-                    whiteCardBtn.setOnClickListener(
-                            new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    onWhiteCardClicked(v);
-                                }
-                            }
-                    );
-                    //Style button
-                    whiteCardBtn.setBackgroundResource(R.drawable.white_card);
-                    final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-                    whiteCardBtn.setWidth((int) (100 * scale + .5f));
-                    whiteCardBtn.setHeight((int) (100 * scale + .5f));
-                    ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
-                    ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
-                            ll.topMargin,
-                            (int) (ll.rightMargin + (3 * scale + .5f)),
-                            (int) (ll.bottomMargin + (5 * scale + .5f)));
-                    whiteCardBtn.setLayoutParams(ll);
-                    whiteCardBtn.setSingleLine(false);
-                    whiteCardBtn.setTextColor(Color.DKGRAY);
-                    whiteCardBtn.setTextSize(5 * scale + .5f);
-                    whiteCardBtn.setTag(true); //Determines playable
-                    whiteCardsLayout.addView(whiteCardBtn);
-                } else if (message.charAt(0) == 'b') {
-                    TextView mainBlack = findViewById(R.id.blackCardMain);
-                    mainBlack.setText(message.substring(1));
+                    updatePlayerWhite(message.substring(1));
                 }
+
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
@@ -534,8 +411,8 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - No UI components (Apart from white at bottom) are being updated
-        - Repeating cards for users
+        - No UI components (Apart from white at bottom) are being updated for czar
+        - Repeating cards for users (Sometimes already played)
         - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
         - Also in scores on side, the name is always null, so they are all under one name
      */
@@ -652,7 +529,7 @@ public class mainGame extends AppCompatActivity {
         String whiteCardText = whiteButton.getText().toString();
         try {
             mRealTimeMultiplayerClient.sendReliableMessage(
-                    whiteCardText.getBytes("utf-8"),
+                    ("cw" + whiteCardText).getBytes("utf-8"),
                     mRoomId,
                     czarId,
                     null
@@ -673,7 +550,10 @@ public class mainGame extends AppCompatActivity {
         ((ViewGroup) view.getParent()).removeAllViews();
     }
 
+    //Messaging
+
     private void sendMsg(String message) {
+        Log.d(TAG, String.valueOf(mParticipants.size()));
         for (Participant p : mParticipants) {
             try {
                 mRealTimeMultiplayerClient.sendReliableMessage(
@@ -700,5 +580,144 @@ public class mainGame extends AppCompatActivity {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
+    }
+
+    //UI updates
+
+    private void updateBlack(String newblack) {
+        TextView blackPrompt = findViewById(R.id.blackCardMain);
+        blackPrompt.setText(newblack);
+    }
+
+    private void updateWins(String wonCard, String senderId) {
+        Log.d(TAG, "wonCard " + wonCard);
+        //Update wins hashmap
+        if (wonCards == null) { wonCards = new HashMap<>(); }
+        if (wonCards.containsKey(idNames.get(senderId))) {
+            //Update scores of existing participant
+            wonCards.get(idNames.get(senderId)).add(wonCard);
+        } else {
+            //Add participant to scores
+            ArrayList<String> newWinTmp = new ArrayList<>();
+            newWinTmp.add(wonCard);
+            Log.d(TAG, "idNames.get(senderId) " + idNames.get(senderId));
+            wonCards.put(idNames.get(senderId), newWinTmp);
+        }
+
+        //Update tags on own white cards
+        LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+        for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
+            if (! (Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
+                whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
+                break;
+            }
+        }
+
+        //Update list of wins
+        TextView winsText = findViewById(R.id.winsScrolledText);
+        String newWinsMsg = "SCORES\n\n";
+        for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
+            newWinsMsg += (idNames.get(win.getKey()) + "\n");
+            for (String cardWon : win.getValue()) {
+                Log.d(TAG, "cardWon " + cardWon);
+                newWinsMsg += ("    " + cardWon + "\n");
+            }
+        }
+
+        winsText.setText(newWinsMsg);
+
+        //Check if game is over
+        if (numCardsRemaining == 0) {
+            Log.d(TAG, "Out of Cards");
+            Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+            showScores.putExtra("scores", wonCards);
+            finish();
+            startActivity(showScores);
+        }
+        numCardsRemaining--;
+    }
+
+    private void updateCzarWhite(String message, String senderId) {
+        playedCards.put(senderId, message);
+        LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
+        found:
+        {
+            for (int i = 0; i < whitesPlayed.getChildCount(); i++) {
+                if (whitesPlayed.getChildAt(i).getTag().equals(senderId)) {
+                    Button btnToOverwrite = (Button) whitesPlayed.getChildAt(i);
+                    if (btnToOverwrite.getTag().equals(senderId)) {
+                        //Overwrite existing button
+                        btnToOverwrite.setText(message);
+                        break found;
+                    }
+                }
+            }
+            //This player hasn't played yet - Add their card
+            LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+            //Add deck buttons
+            Button playedWhiteCardBtn = new Button(getApplicationContext());
+            playedWhiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+            playedWhiteCardBtn.setText(message);
+            playedWhiteCardBtn.setTag(senderId);
+            playedWhiteCardBtn.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            chooseCard(v);
+                        }
+                    }
+            );
+            //Style button
+            playedWhiteCardBtn.setBackgroundResource(R.drawable.white_card);
+            final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
+            playedWhiteCardBtn.setWidth((int) (100 * scale + .5f));
+            playedWhiteCardBtn.setHeight((int) (100 * scale + .5f));
+            ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) playedWhiteCardBtn.getLayoutParams();
+            ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
+                    ll.topMargin,
+                    (int) (ll.rightMargin + (3 * scale + .5f)),
+                    (int) (ll.bottomMargin + (5 * scale + .5f)));
+            playedWhiteCardBtn.setLayoutParams(ll);
+            playedWhiteCardBtn.setSingleLine(false);
+            playedWhiteCardBtn.setTextColor(Color.DKGRAY);
+            playedWhiteCardBtn.setTextSize(5 * scale + .5f);
+            whiteCardsLayout.addView(playedWhiteCardBtn);
+        }
+    }
+
+    private void updatePlayerWhite(String message) {
+        //Received white card from czar - add to list of available cards
+        if (whiteCards == null) { whiteCards = new ArrayList<>(); }
+        LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+        whiteCards.add(message);
+
+        //Add deck buttons
+        Button whiteCardBtn = new Button(getApplicationContext());
+        whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+        whiteCardBtn.setText(message);
+        whiteCardBtn.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onWhiteCardClicked(v);
+                    }
+                }
+        );
+        //Style button
+        whiteCardBtn.setBackgroundResource(R.drawable.white_card);
+        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
+        whiteCardBtn.setWidth((int) (100 * scale + .5f));
+        whiteCardBtn.setHeight((int) (100 * scale + .5f));
+        ConstraintLayout.LayoutParams ll = (ConstraintLayout.LayoutParams) whiteCardBtn.getLayoutParams();
+        ll.setMargins((int) (ll.leftMargin + (3 * scale + .5f)),
+                ll.topMargin,
+                (int) (ll.rightMargin + (3 * scale + .5f)),
+                (int) (ll.bottomMargin + (5 * scale + .5f)));
+        whiteCardBtn.setLayoutParams(ll);
+        whiteCardBtn.setSingleLine(false);
+        whiteCardBtn.setTextColor(Color.DKGRAY);
+        whiteCardBtn.setTextSize(5 * scale + .5f);
+        whiteCardBtn.setTag(true); //Determines playable
+        whiteCardsLayout.addView(whiteCardBtn);
     }
 }
