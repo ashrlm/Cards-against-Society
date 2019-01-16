@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -139,8 +140,7 @@ public class mainGame extends AppCompatActivity {
 
     void startQuickGame() {
         Log.d(TAG, "Started quick-game");
-        // quick-start a game with 1 randomly selected opponent
-        int MIN_PLAYERS = 1;
+        int MIN_PLAYERS = 2;
         int MAX_PLAYERS = 7;
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
@@ -163,7 +163,10 @@ public class mainGame extends AppCompatActivity {
             try {
                 String message = new String(buf, "utf-8");
 
-                if (message.equals("leave")) {
+                if (message.startsWith("name")) {
+                    Log.d(TAG, "New Name: " + message.substring(5));
+                    idNames.put(senderId, message.substring(5));
+                } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
                     //Czar left - Game over
                     mRealTimeMultiplayerClient.leave(mRoomConfig, "czar left");
@@ -171,17 +174,18 @@ public class mainGame extends AppCompatActivity {
                     Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
                     showScores.putExtra("scores", wonCards);
                     startActivity(showScores);
-                }
-
-                if (message.startsWith("newblack")) {
+                } else if (message.startsWith("newblack")) {
+                    Log.d(TAG, "newblack: " + message.substring(9));
                     //Message in format of "newblack [NEW BLACK CARD]"
                     //Update UI
                     TextView blackPrompt = findViewById(R.id.blackCardMain);
                     blackPrompt.setText(message.substring(9));
                 } else if (message.startsWith("win")) {
+                    Log.d(TAG, "win: " + message.substring(4));
                     //Message in format of win [text on card]
                     String wonCard = message.substring(4);
                     //Update wins hashmap
+                    if (wonCards == null) { wonCards = new HashMap<>(); }
                     if (wonCards.containsKey(senderId)) {
                         //Update scores of existing participant
                         wonCards.get(senderId).add(wonCard);
@@ -195,8 +199,8 @@ public class mainGame extends AppCompatActivity {
                     //Update tags on own white cards
                     LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
                     for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
-                        if (whiteCardsLayout.getChildAt(i).getVisibility() == View.INVISIBLE) {
-                            whiteCardsLayout.getChildAt(i).setTag(false); //Make card unplayable - Already done
+                        if (! (Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
+                            whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
                             break;
                         }
                     }
@@ -223,6 +227,7 @@ public class mainGame extends AppCompatActivity {
                     }
                     numCardsRemaining--;
                 } else if (isCzar) {
+                    Log.d(TAG, "whiteReceived: " + message);
                     //White card sent to czar by player
                     playedCards.put(senderId, message);
                     LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
@@ -237,7 +242,7 @@ public class mainGame extends AppCompatActivity {
                                 }
                             }
                         }
-                       //This player hasn't played yet - Add their card
+                        //This player hasn't played yet - Add their card
                         LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
                         //Add deck buttons
                         Button playedWhiteCardBtn = new Button(getApplicationContext());
@@ -263,22 +268,22 @@ public class mainGame extends AppCompatActivity {
                                 (int) (ll.rightMargin + (3 * scale + .5f)),
                                 (int) (ll.bottomMargin + (5 * scale + .5f)));
                         playedWhiteCardBtn.setLayoutParams(ll);
-                    playedWhiteCardBtn.setSingleLine(false);
-                    playedWhiteCardBtn.setTextColor(Color.DKGRAY);
-                    playedWhiteCardBtn.setTextSize(5 * scale + .5f);
-                    whiteCardsLayout.addView(playedWhiteCardBtn);
-                }
-
+                        playedWhiteCardBtn.setSingleLine(false);
+                        playedWhiteCardBtn.setTextColor(Color.DKGRAY);
+                        playedWhiteCardBtn.setTextSize(5 * scale + .5f);
+                        whiteCardsLayout.addView(playedWhiteCardBtn);
+                    }
                 } else if (message.charAt(0) == 'w') {
+                    Log.d(TAG, "whiteFromCzar: " + message.substring(1));
                     czarId = senderId;
                     //Received white card from czar - add to list of available cards
                     if (whiteCards == null) { whiteCards = new ArrayList<>(); }
-                    whiteCards.add(message.subSequence(1, message.length()-1).toString());
+                    whiteCards.add(message.substring(1));
                     LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
                     //Add deck buttons
                     Button whiteCardBtn = new Button(getApplicationContext());
                     whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
-                    whiteCardBtn.setText(message);
+                    whiteCardBtn.setText(message.substring(1));
                     whiteCardBtn.setOnClickListener(
                             new View.OnClickListener() {
                                 @Override
@@ -523,12 +528,56 @@ public class mainGame extends AppCompatActivity {
 
     //------------------------------------Main Game logic-------------------------------------------
 
-    private void runGame () {
+    /* TODO (Bugs to fix) :
+        - Main Black Card not being updated for czar
+        - Repeating cards for users
+        - In scores on side, name is always null and text has unnecessary data
+     */
+
+    /* TODO: (Necessary Features)
+        - Require a czar to be present
+            - Find some way of requiring a role in automatch
+                               OR
+            - If none is present at game start time, choose one and let them select decks (Require initial role submission to all? not quite sure how this would work)
+
+        - Update selection UI
+            - PLAYER
+                - Highlight cards
+                - Add "PLAY CARDS" button on side
+                    - Disabled initially
+                    - Only enable when a card is selected
+                    - When pressed, disable on click for "PLAY CARDS" button (Global flag)
+                    - Re-enable on "win" msg received
+            - CZAR
+                - Highlight cards
+                 - Add "SELECT WINNER" button on side
+                    - Disabled initially
+                    - When pressed, disable on click for "SELECT WINNER" button (Global flag")
+                    - Only re-enabled when all players have submitted cards
+                    - Clear cards on click
+
+        - Add support for choose multiple
+            - PLAYER
+                - Highlight multiple
+            - CZAR
+                - show in stack that expands horizontally and replaces all other cards
+                - Have "SELECT WINNER" button in this stack
+     */
+
+    /* TODO: (Optional features)
+        - Add voice chat
+            - Icons for mute/silence in status bar
+     */
+
+    private void runGame() {
         Log.d(TAG, String.valueOf(isCzar));
         mPlaying = true;
 
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
+
+        //Share name
+        sendMsg("name" + GoogleSignIn.getLastSignedInAccount(this).getDisplayName());
 
         if (isCzar) {
             //Split decks
@@ -536,6 +585,13 @@ public class mainGame extends AppCompatActivity {
             playedCards = new HashMap<>();
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
             //Send decks to all participants
+
+            for (int i = 0; i < mParticipants.size(); i++) {
+                for (String card : whiteCardsSplit.get(i)) {
+                    sendTargetedMsg("w" + card, mParticipants.get(i));
+                }
+            }
+
             for (int i = 0; i < mParticipants.size(); i++) {
 
                 //Add participant name/id to deck
@@ -560,8 +616,8 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
             }
+            sendMsg("newblack " + blackCards.get(new Random().nextInt(blackCards.size())));
         }
-        Log.d(TAG, "runGame(); finished");
     }
 
     private ArrayList<ArrayList<String>> splitDeck (ArrayList<String> deck) {
@@ -583,11 +639,10 @@ public class mainGame extends AppCompatActivity {
         //Set all other cards to deselected
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
-            if ((Boolean) buttonsLayout.getChildAt(i).getTag()) {
-                buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
-            }
+            buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
         }
         whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
+        whiteButton.setTag(false);
         String whiteCardText = whiteButton.getText().toString();
         try {
             mRealTimeMultiplayerClient.sendReliableMessage(
@@ -604,33 +659,40 @@ public class mainGame extends AppCompatActivity {
 
     private void chooseCard(View view, String senderId) {
         Button chosenCard = (Button) view;
-        String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
 
-        //Tell everyone to show card selecting UI
+        sendMsg("newblack " + blackCards.get(new Random().nextInt(blackCards.size())));
+        sendMsg("win " + senderId + " " + chosenCard.getText().toString());
+
+        //Clear all cards from bottom of screen
+        ((ViewGroup) view.getParent()).removeAllViews();
+    }
+
+    private void sendMsg(String message) {
         for (Participant p : mParticipants) {
-
             try {
                 mRealTimeMultiplayerClient.sendReliableMessage(
-                        ("newblack " + newBlack).getBytes("utf-8"),
+                        message.getBytes("utf-8"),
                         mRoomId,
                         p.getParticipantId(),
                         null
                 );
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
+                Log.e(TAG, String.valueOf(e));
             }
+        }
+    }
 
-            //Tell everyone who got a point
-            try {
-                mRealTimeMultiplayerClient.sendReliableMessage(
-                        ("win " + senderId + " " + chosenCard.getText().toString()).getBytes("utf-8"),
-                        mRoomId,
-                        chosenCard.getTag().toString(),
-                        null
-                );
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+    private void sendTargetedMsg(String message, Participant p) {
+        try {
+            mRealTimeMultiplayerClient.sendReliableMessage(
+                    message.getBytes("utf-8"),
+                    mRoomId,
+                    p.getParticipantId(),
+                    null
+            );
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
         }
     }
 }
