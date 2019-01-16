@@ -164,8 +164,8 @@ public class mainGame extends AppCompatActivity {
                 String message = new String(buf, "utf-8");
 
                 if (message.startsWith("name")) {
-                    Log.d(TAG, "New Name: " + message.substring(5));
-                    idNames.put(senderId, message.substring(5));
+                    Log.d(TAG, "New Name: " + message.substring(4));
+                    idNames.put(senderId, message.substring(4));
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
                     //Czar left - Game over
@@ -184,15 +184,17 @@ public class mainGame extends AppCompatActivity {
                     Log.d(TAG, "win: " + message.substring(4));
                     //Message in format of win [text on card]
                     String wonCard = message.substring(4);
+                    Log.d(TAG, "wonCard " + wonCard);
                     //Update wins hashmap
                     if (wonCards == null) { wonCards = new HashMap<>(); }
-                    if (wonCards.containsKey(senderId)) {
+                    if (wonCards.containsKey(idNames.get(senderId))) {
                         //Update scores of existing participant
-                        wonCards.get(senderId).add(wonCard);
+                        wonCards.get(idNames.get(senderId)).add(wonCard);
                     } else {
                         //Add participant to scores
                         ArrayList<String> newWinTmp = new ArrayList<>();
                         newWinTmp.add(wonCard);
+                        Log.d(TAG, "idNames.get(senderId) " + idNames.get(senderId));
                         wonCards.put(idNames.get(senderId), newWinTmp);
                     }
 
@@ -209,8 +211,11 @@ public class mainGame extends AppCompatActivity {
                     TextView winsText = findViewById(R.id.winsScrolledText);
                     String newWinsMsg = "SCORES\n\n";
                     for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
+                        Log.d(TAG, win.getKey());
+                        Log.d(TAG, "idNames.get(win.getKey()) " + idNames.get(win.getKey()));
                         newWinsMsg += (idNames.get(win.getKey()) + "\n");
                         for (String cardWon : win.getValue()) {
+                            Log.d(TAG, "cardWon " + cardWon);
                             newWinsMsg += ("    " + cardWon + "\n");
                         }
                     }
@@ -253,7 +258,7 @@ public class mainGame extends AppCompatActivity {
                                 new View.OnClickListener() {
                                     @Override
                                     public void onClick(View v) {
-                                        chooseCard(v, senderId);
+                                        chooseCard(v);
                                     }
                                 }
                         );
@@ -529,9 +534,10 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - Main Black Card not being updated for czar
+        - No UI components (Apart from white at bottom) are being updated
         - Repeating cards for users
-        - In scores on side, name is always null and text has unnecessary data
+        - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
+        - Also in scores on side, the name is always null, so they are all under one name
      */
 
     /* TODO: (Necessary Features)
@@ -657,11 +663,11 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private void chooseCard(View view, String senderId) {
+    private void chooseCard(View view) {
         Button chosenCard = (Button) view;
 
         sendMsg("newblack " + blackCards.get(new Random().nextInt(blackCards.size())));
-        sendMsg("win " + senderId + " " + chosenCard.getText().toString());
+        sendMsg("win " + chosenCard.getText().toString());
 
         //Clear all cards from bottom of screen
         ((ViewGroup) view.getParent()).removeAllViews();
