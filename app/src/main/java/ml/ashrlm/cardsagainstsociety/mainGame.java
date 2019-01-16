@@ -180,8 +180,8 @@ public class mainGame extends AppCompatActivity {
                     updateBlack(message.substring(9));
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
-                    //Message in format of win [text on card]
-                    updateWins(message.substring(4), senderId);
+                    //Message in format of win [text on card] winnerId
+                    updateWins(message.substring(4), senderId); //TODO: add winnerId to message and receive here
 
                 } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
@@ -411,10 +411,10 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - No UI components (Apart from white at bottom) are being updated for czar
         - Repeating cards for users (Sometimes already played)
         - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
         - Also in scores on side, the name is always null, so they are all under one name
+        - updateWins uses senderId, which means the czar is shown to have won all - Add tag to card with sender id
      */
 
     /* TODO: (Necessary Features)
@@ -499,7 +499,10 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
             }
-            sendMsg("newblack " + blackCards.get(new Random().nextInt(blackCards.size())));
+            //Send initial black card
+            String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+            updateBlack(newBlack);
+            sendMsg("newblack " + newBlack);
         }
     }
 
@@ -543,7 +546,12 @@ public class mainGame extends AppCompatActivity {
     private void chooseCard(View view) {
         Button chosenCard = (Button) view;
 
-        sendMsg("newblack " + blackCards.get(new Random().nextInt(blackCards.size())));
+        String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+        updateBlack(newBlack);
+        sendMsg("newblack " + newBlack);
+
+        String winningCardText = chosenCard.getText().toString();
+        updateWins(winningCardText, null); //TODO: Find a way to encode the id of the participant in the message sent by the czar
         sendMsg("win " + chosenCard.getText().toString());
 
         //Clear all cards from bottom of screen
@@ -553,7 +561,6 @@ public class mainGame extends AppCompatActivity {
     //Messaging
 
     private void sendMsg(String message) {
-        Log.d(TAG, String.valueOf(mParticipants.size()));
         for (Participant p : mParticipants) {
             try {
                 mRealTimeMultiplayerClient.sendReliableMessage(
@@ -589,28 +596,19 @@ public class mainGame extends AppCompatActivity {
         blackPrompt.setText(newblack);
     }
 
-    private void updateWins(String wonCard, String senderId) {
+    private void updateWins(String wonCard, String winnerId) {
         Log.d(TAG, "wonCard " + wonCard);
         //Update wins hashmap
         if (wonCards == null) { wonCards = new HashMap<>(); }
-        if (wonCards.containsKey(idNames.get(senderId))) {
+        if (wonCards.containsKey(idNames.get(winnerId))) {
             //Update scores of existing participant
-            wonCards.get(idNames.get(senderId)).add(wonCard);
+            wonCards.get(idNames.get(winnerId)).add(wonCard);
         } else {
             //Add participant to scores
             ArrayList<String> newWinTmp = new ArrayList<>();
             newWinTmp.add(wonCard);
-            Log.d(TAG, "idNames.get(senderId) " + idNames.get(senderId));
-            wonCards.put(idNames.get(senderId), newWinTmp);
-        }
-
-        //Update tags on own white cards
-        LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
-        for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
-            if (! (Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
-                whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
-                break;
-            }
+            Log.d(TAG, "idNames.get(winnerId) " + idNames.get(winnerId));
+            wonCards.put(idNames.get(winnerId), newWinTmp);
         }
 
         //Update list of wins
@@ -626,15 +624,26 @@ public class mainGame extends AppCompatActivity {
 
         winsText.setText(newWinsMsg);
 
-        //Check if game is over
-        if (numCardsRemaining == 0) {
-            Log.d(TAG, "Out of Cards");
-            Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-            showScores.putExtra("scores", wonCards);
-            finish();
-            startActivity(showScores);
+        //Update tags on own white cards
+        if (!isCzar) {
+            LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+            for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
+                if (!(Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
+                    whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
+                    break;
+                }
+            }
+
+            //Check if game is over
+            if (numCardsRemaining == 0) {
+                Log.d(TAG, "Out of Cards");
+                Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+                showScores.putExtra("scores", wonCards);
+                finish();
+                startActivity(showScores);
+            }
+            numCardsRemaining--;
         }
-        numCardsRemaining--;
     }
 
     private void updateCzarWhite(String message, String senderId) {
