@@ -501,6 +501,7 @@ public class mainGame extends AppCompatActivity {
             }
             //Send initial black card
             String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+            blackCards.remove(newBlack);
             updateBlack(newBlack);
             sendMsg("newblack " + newBlack);
         }
