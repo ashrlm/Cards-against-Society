@@ -49,6 +49,7 @@ import java.util.Random;
 public class mainGame extends AppCompatActivity {
 
     private Room mRoom;
+    private String mName;
     private String czarId;
     private String mRoomId;
     private static long role;
@@ -133,6 +134,8 @@ public class mainGame extends AppCompatActivity {
                         @Override
                         public void onSuccess(Player player) {
                             mPlayerId = player.getPlayerId();
+                            mName = player.getDisplayName();
+                            Log.d(TAG, "name: " + mName);
                         }
                     });
         }
@@ -167,6 +170,7 @@ public class mainGame extends AppCompatActivity {
                 if (message.startsWith("name")) {
                     Log.d(TAG, "New Name: " + message.substring(4));
                     idNames.put(senderId, message.substring(4));
+                    Log.d(TAG, "name hashmap: " + idNames);
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
                     //Czar left - Game over
@@ -412,8 +416,7 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
-        - Also in scores on side, the name is always null, so they are all under one name
+        - In scores on side, there is weird behavouir for those who are not czar
      */
 
     /* TODO: (Necessary Features)
@@ -447,6 +450,8 @@ public class mainGame extends AppCompatActivity {
      */
 
     /* TODO: (Optional features)
+        - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
+
         - Add voice chat
             - Icons for mute/silence in status bar
      */
@@ -459,7 +464,7 @@ public class mainGame extends AppCompatActivity {
         setContentView(R.layout.main_game);
 
         //Share name
-        sendMsg("name" + GoogleSignIn.getLastSignedInAccount(this).getDisplayName());
+        sendMsg("name" + mName);
 
         if (isCzar) {
             //Split decks
@@ -530,7 +535,7 @@ public class mainGame extends AppCompatActivity {
         sendMsg("newblack " + newBlack);
 
         String winningCardText = chosenCard.getText().toString();
-        updateWins(winningCardText, null); //TODO: Find a way to encode the id of the participant in the message sent by the czar
+        updateWins(winningCardText, chosenCard.getTag().toString());
         sendMsg("win " + chosenCard.getText().toString());
 
         //Clear all cards from bottom of screen
@@ -587,18 +592,19 @@ public class mainGame extends AppCompatActivity {
             ArrayList<String> newWinTmp = new ArrayList<>();
             newWinTmp.add(wonCard);
             Log.d(TAG, "idNames.get(winnerId) " + idNames.get(winnerId));
-            wonCards.put(idNames.get(winnerId), newWinTmp);
+            wonCards.put(winnerId, newWinTmp);
         }
 
         //Update list of wins
         TextView winsText = findViewById(R.id.winsScrolledText);
-        String newWinsMsg = "SCORES\n\n";
+        String newWinsMsg = "\n\n\nSCORES\n\n";
         for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
             newWinsMsg += (idNames.get(win.getKey()) + "\n");
             for (String cardWon : win.getValue()) {
                 Log.d(TAG, "cardWon " + cardWon);
                 newWinsMsg += ("    " + cardWon + "\n");
             }
+            newWinsMsg += "\n";
         }
 
         winsText.setText(newWinsMsg);
