@@ -420,7 +420,6 @@ public class mainGame extends AppCompatActivity {
     /* TODO (Bugs to fix) :
         - Different number of cards per person
         - No text in status bar
-        - Scoresheet using ids (Swap out for names before sending)
      */
 
     /* TODO: (Necessary Features)
@@ -544,8 +543,8 @@ public class mainGame extends AppCompatActivity {
         String winningCardText = chosenCard.getText().toString();
         String winnerId = chosenCard.getTag().toString();
 
-        updateWins(winningCardText, winnerId);
         sendMsg("win " + chosenCard.getText().toString() + " winnerId " + winnerId);
+        updateWins(winningCardText, winnerId);
 
         //Clear all cards from bottom of screen
         ((ViewGroup) view.getParent()).removeAllViews();
@@ -638,7 +637,7 @@ public class mainGame extends AppCompatActivity {
                 finish();
                 Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
                 HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
-                showScores.putExtra("scores", wonCards);
+                showScores.putExtra("scores", namedWonCards);
                 startActivity(showScores);
             }
         }
