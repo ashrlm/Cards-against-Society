@@ -185,8 +185,10 @@ public class mainGame extends AppCompatActivity {
                     updateBlack(message.substring(9));
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
-                    //Message in format of win [text on card] winnerId
-                    updateWins(message.substring(4), senderId);
+                    //Message in format of win [text on card] winnerId [winnerId]
+                    String winnerId = message.substring(message.lastIndexOf("winnerId") + 9);
+                    Log.d(TAG, "winnnerId:" + winnerId);
+                    updateWins(message.substring(4, message.lastIndexOf("winnerId") - 1), winnerId);
 
                 } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
@@ -416,7 +418,7 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - In scores on side, there is weird behavouir for those who are not czar
+        None at the moment :) (Work on feature implementation)
      */
 
     /* TODO: (Necessary Features)
@@ -463,8 +465,7 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
 
-        //Share name
-        sendMsg("name" + mName);
+        sendMsg("name" + mName); //Share name
 
         if (isCzar) {
             //Split decks
@@ -535,8 +536,10 @@ public class mainGame extends AppCompatActivity {
         sendMsg("newblack " + newBlack);
 
         String winningCardText = chosenCard.getText().toString();
-        updateWins(winningCardText, chosenCard.getTag().toString());
-        sendMsg("win " + chosenCard.getText().toString());
+        String winnerId = chosenCard.getTag().toString();
+
+        updateWins(winningCardText, winnerId);
+        sendMsg("win " + chosenCard.getText().toString() + " winnerId " + winnerId);
 
         //Clear all cards from bottom of screen
         ((ViewGroup) view.getParent()).removeAllViews();
@@ -583,6 +586,9 @@ public class mainGame extends AppCompatActivity {
     private void updateWins(String wonCard, String winnerId) {
         Log.d(TAG, "wonCard " + wonCard);
         //Update wins hashmap
+        if (idNames.get(winnerId) == null) {
+            idNames.put(winnerId, mName);
+        }
         if (wonCards == null) { wonCards = new HashMap<>(); }
         if (wonCards.containsKey(winnerId)) {
             //Update scores of existing participant
