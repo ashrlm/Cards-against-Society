@@ -463,12 +463,14 @@ public class mainGame extends AppCompatActivity {
      */
 
     private void runGame() {
-        Log.d(TAG, String.valueOf(isCzar));
-        mPlaying = true;
 
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("Cards against Society - Loading lobby");
+        setSupportActionBar(myToolbar);
 
+        mPlaying = true;
         sendMsg("name" + mName); //Share name
 
         if (isCzar) {

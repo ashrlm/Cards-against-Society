@@ -17,4 +17,5 @@
     <string name="title_activity_main_game">mainGame</string>
     <string name="title_activity_score_sheet">scoreSheet</string>
     <string name="loading_message">Please wait while the game loads</string>
+    <string name="go_home">Return to homepage</string>
 </resources>
