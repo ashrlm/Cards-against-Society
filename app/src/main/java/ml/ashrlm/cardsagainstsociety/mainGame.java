@@ -584,9 +584,9 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "wonCard " + wonCard);
         //Update wins hashmap
         if (wonCards == null) { wonCards = new HashMap<>(); }
-        if (wonCards.containsKey(idNames.get(winnerId))) {
+        if (wonCards.containsKey(winnerId)) {
             //Update scores of existing participant
-            wonCards.get(idNames.get(winnerId)).add(wonCard);
+            wonCards.get(winnerId).add(wonCard);
         } else {
             //Add participant to scores
             ArrayList<String> newWinTmp = new ArrayList<>();
