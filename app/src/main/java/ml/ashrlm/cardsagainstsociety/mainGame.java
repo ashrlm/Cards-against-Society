@@ -52,13 +52,13 @@ public class mainGame extends AppCompatActivity {
     private String mName;
     private String czarId;
     private String mRoomId;
+    private int numPerDeck;
     private static long role;
     private String mPlayerId;
+    private int numPlayed = 0;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
-    private String mMyParticipantId;
     private boolean mPlaying = false;
-    private int numCardsRemaining = 10;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private HashMap<String, String> playedCards; //Used by the czar
@@ -173,11 +173,12 @@ public class mainGame extends AppCompatActivity {
                     Log.d(TAG, "name hashmap: " + idNames);
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
-                    //Czar left - Game over
-                    mRealTimeMultiplayerClient.leave(mRoomConfig, "czar left");
+                    //Game over
+                    mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
                     finish();
                     Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                    showScores.putExtra("scores", wonCards);
+                    HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
+                    showScores.putExtra("scores", namedWonCards);
                     startActivity(showScores);
                 } else if (message.startsWith("newblack")) {
                     Log.d(TAG, "newblack: " + message.substring(9));
@@ -273,7 +274,6 @@ public class mainGame extends AppCompatActivity {
 
             //get participants and my ID:
             mParticipants = room.getParticipants();
-            mMyParticipantId = room.getParticipantId(mPlayerId);
 
             // save room ID if its not initialized in onRoomCreated() so we can leave cleanly before the game starts.
             if (mRoomId == null) {
@@ -418,10 +418,15 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        None at the moment :) (Work on feature implementation)
+        - Different number of cards per person
+        - No text in status bar
+        - Scoresheet using ids (Swap out for names before sending)
      */
 
     /* TODO: (Necessary Features)
+
+        - Custom waiting room UI? idk but this would sort out the below one which is def necessary so... maybe?
+
         - Require a czar to be present
             - Find some way of requiring a role in automatch
                                OR
@@ -452,7 +457,7 @@ public class mainGame extends AppCompatActivity {
      */
 
     /* TODO: (Optional features)
-        - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
+        - In scores on side, when a card has to be wrapped, it loses indentation. Fix this. (Find better solution than adding spaces at start)
 
         - Add voice chat
             - Icons for mute/silence in status bar
@@ -499,6 +504,7 @@ public class mainGame extends AppCompatActivity {
             }
             cardsSplit.add(cardsTmp);
         }
+        numPerDeck = cardsSplit.get(0).size();
         return cardsSplit;
     }
 
@@ -624,16 +630,17 @@ public class mainGame extends AppCompatActivity {
                     break;
                 }
             }
-
-            //Check if game is over
-            if (numCardsRemaining == 0) {
-                Log.d(TAG, "Out of Cards");
-                Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                showScores.putExtra("scores", wonCards);
+        } else {
+            numPlayed++;
+            if (numPlayed == numPerDeck) {
+                sendMsg("leave");
+                mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
                 finish();
+                Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+                HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
+                showScores.putExtra("scores", wonCards);
                 startActivity(showScores);
             }
-            numCardsRemaining--;
         }
     }
 
@@ -722,5 +729,14 @@ public class mainGame extends AppCompatActivity {
         whiteCardBtn.setTextSize(5 * scale + .5f);
         whiteCardBtn.setTag(true); //Determines playable
         whiteCardsLayout.addView(whiteCardBtn);
+    }
+
+    // Misc
+    private HashMap<String, ArrayList<String>> replaceIds (HashMap<String, ArrayList<String>> idWins) {
+        HashMap<String, ArrayList<String>> namedWins = new HashMap<>();
+        for (Map.Entry<String, ArrayList<String>> win : idWins.entrySet()) {
+            namedWins.put(idNames.get(win.getKey()), win.getValue());
+        }
+        return namedWins;
     }
 }
