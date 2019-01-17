@@ -181,7 +181,7 @@ public class mainGame extends AppCompatActivity {
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
                     //Message in format of win [text on card] winnerId
-                    updateWins(message.substring(4), senderId); //TODO: add winnerId to message and receive here
+                    updateWins(message.substring(4), senderId);
 
                 } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
@@ -521,12 +521,15 @@ public class mainGame extends AppCompatActivity {
         return cardsSplit;
     }
 
+    // Card selection
+
     private void onWhiteCardClicked(View view) {
         Button whiteButton = (Button) view;
         //Set all other cards to deselected
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
             buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+            buttonsLayout.getChildAt(i).setTag(true);
         }
         whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
         whiteButton.setTag(false);
