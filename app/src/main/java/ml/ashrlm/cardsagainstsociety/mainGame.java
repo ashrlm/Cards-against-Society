@@ -39,6 +39,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -411,10 +412,8 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - Repeating cards for users (Sometimes already played)
         - In scores on side, when a card has to be wrapped, it loses indentation (Find better solution than adding spaces at start)
         - Also in scores on side, the name is always null, so they are all under one name
-        - updateWins uses senderId, which means the czar is shown to have won all - Add tag to card with sender id
      */
 
     /* TODO: (Necessary Features)
@@ -475,30 +474,6 @@ public class mainGame extends AppCompatActivity {
                 }
             }
 
-            for (int i = 0; i < mParticipants.size(); i++) {
-
-                //Add participant name/id to deck
-                idNames.put(mParticipants.get(i).getParticipantId(), mParticipants.get(i).getDisplayName());
-                Log.d(TAG, "partNIdAdded");
-
-                if (mParticipants.get(i).getParticipantId().equals(mMyParticipantId)) { continue; }
-
-                for (String card : whiteCardsSplit.get(i)) {
-                    card = "w" + card;
-                    try {
-                        Log.d(TAG, "sentWhiteCard");
-                        mRealTimeMultiplayerClient.sendReliableMessage(
-                                card.getBytes("utf-8"),
-                                mRoomId,
-                                mParticipants.get(i).getParticipantId(),
-                                null
-                        );
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, e.toString());
-                    }
-                }
-            }
             //Send initial black card
             String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
             blackCards.remove(newBlack);
@@ -699,13 +674,16 @@ public class mainGame extends AppCompatActivity {
     }
 
     private void updatePlayerWhite(String message) {
+        Log.d(TAG, String.valueOf(whiteCards));
         //Received white card from czar - add to list of available cards
         if (whiteCards == null) { whiteCards = new ArrayList<>(); }
         LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
+
         whiteCards.add(message);
 
         //Add deck buttons
         Button whiteCardBtn = new Button(getApplicationContext());
+
         whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
         whiteCardBtn.setText(message);
         whiteCardBtn.setOnClickListener(
