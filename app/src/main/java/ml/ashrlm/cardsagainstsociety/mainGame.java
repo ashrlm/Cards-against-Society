@@ -466,7 +466,7 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        myToolbar.setTitle("Cards against Society - Loading lobby");
+        myToolbar.setTitle("Cards against Society");
         setSupportActionBar(myToolbar);
 
         chooseCardBtn = findViewById(R.id.sendCardButton);
