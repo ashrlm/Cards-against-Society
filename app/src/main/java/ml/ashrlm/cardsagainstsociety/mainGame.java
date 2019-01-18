@@ -54,8 +54,9 @@ public class mainGame extends AppCompatActivity {
     private String mRoomId;
     private int numPerDeck;
     private static long role;
-    private String mPlayerId;
+    private Button targetCard;
     private int numPlayed = 0;
+    private int numReceived = 0;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private boolean mPlaying = false;
@@ -70,6 +71,7 @@ public class mainGame extends AppCompatActivity {
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
+    private Button chooseCardBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -133,7 +135,6 @@ public class mainGame extends AppCompatActivity {
                     .addOnSuccessListener(new OnSuccessListener<Player>() {
                         @Override
                         public void onSuccess(Player player) {
-                            mPlayerId = player.getPlayerId();
                             mName = player.getDisplayName();
                             Log.d(TAG, "name: " + mName);
                         }
@@ -171,6 +172,7 @@ public class mainGame extends AppCompatActivity {
                     Log.d(TAG, "New Name: " + message.substring(4));
                     idNames.put(senderId, message.substring(4));
                     Log.d(TAG, "name hashmap: " + idNames);
+
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
                     //Game over
@@ -180,21 +182,33 @@ public class mainGame extends AppCompatActivity {
                     HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
                     showScores.putExtra("scores", namedWonCards);
                     startActivity(showScores);
+
                 } else if (message.startsWith("newblack")) {
                     Log.d(TAG, "newblack: " + message.substring(9));
                     //Message in format of "newblack [NEW BLACK CARD]"
                     updateBlack(message.substring(9));
+
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
                     //Message in format of win [text on card] winnerId [winnerId]
                     String winnerId = message.substring(message.lastIndexOf("winnerId") + 9);
                     Log.d(TAG, "winnnerId:" + winnerId);
                     updateWins(message.substring(4, message.lastIndexOf("winnerId") - 1), winnerId);
+                    //Re-enable all bottom cards
+                    LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
+                    for (int i = 0; i < whitesScrolledLayout.getChildCount(); i++) {
+                        whitesScrolledLayout.getChildAt(i).setEnabled(true);
+                    }
 
                 } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
                     //White card sent to czar by player
                     updateCzarWhite(message.substring(2), senderId);
+                    numReceived++;
+                    LinearLayout whiteLayout = findViewById(R.id.whitesScrolledLayout);
+                    for (int i = 0; i < whiteLayout.getChildCount(); i++) {
+                        whiteLayout.getChildAt(i).setEnabled(numReceived == mParticipants.size()-1);
+                    }
 
                 } else if (message.charAt(0) == 'w') {
                     Log.d(TAG, "whiteFromCzar: " + message.substring(1));
@@ -420,6 +434,7 @@ public class mainGame extends AppCompatActivity {
     /* TODO (Bugs to fix) :
         - Different number of cards per person
         - No text in status bar
+        - The scoresheet is showing the name of the person whose device it is, not the person who won it (Likely due to idNames not being updated but I don't have time to check right now)
      */
 
     /* TODO: (Necessary Features)
@@ -430,22 +445,6 @@ public class mainGame extends AppCompatActivity {
             - Find some way of requiring a role in automatch
                                OR
             - If none is present at game start time, choose one and let them select decks (Require initial role submission to all? not quite sure how this would work)
-
-        - Update selection UI
-            - PLAYER
-                - Highlight cards
-                - Add "PLAY CARDS" button on side
-                    - Disabled initially
-                    - Only enable when a card is selected
-                    - When pressed, disable on click for "PLAY CARDS" button (Global flag)
-                    - Re-enable on "win" msg received
-            - CZAR
-                - Highlight cards
-                 - Add "SELECT WINNER" button on side
-                    - Disabled initially
-                    - When pressed, disable on click for "SELECT WINNER" button (Global flag")
-                    - Only re-enabled when all players have submitted cards
-                    - Clear cards on click
 
         - Add support for choose multiple
             - PLAYER
@@ -470,10 +469,14 @@ public class mainGame extends AppCompatActivity {
         myToolbar.setTitle("Cards against Society - Loading lobby");
         setSupportActionBar(myToolbar);
 
+        chooseCardBtn = findViewById(R.id.sendCardButton);
         mPlaying = true;
         sendMsg("name" + mName); //Share name
 
         if (isCzar) {
+            chooseCardBtn.setEnabled(false);
+            chooseCardBtn.setText(R.string.choose_card_czar);
+
             //Split decks
             wonCards = new HashMap<>();
             playedCards = new HashMap<>();
@@ -491,6 +494,9 @@ public class mainGame extends AppCompatActivity {
             blackCards.remove(newBlack);
             updateBlack(newBlack);
             sendMsg("newblack " + newBlack);
+        } else {
+            chooseCardBtn.setEnabled(false);
+            chooseCardBtn.setText(R.string.choose_card_player);
         }
     }
 
@@ -511,45 +517,59 @@ public class mainGame extends AppCompatActivity {
 
     // Card selection
 
-    private void onWhiteCardClicked(View view) {
-        Button whiteButton = (Button) view;
-        //Set all other cards to deselected
+    private void highlightCard(View view) {
+        Button targetWhite = (Button) view;
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
             buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
             buttonsLayout.getChildAt(i).setTag(true);
         }
-        whiteButton.setBackgroundResource(R.drawable.selected_white); //Set card to selected
-        whiteButton.setTag(false);
-        String whiteCardText = whiteButton.getText().toString();
-        try {
-            mRealTimeMultiplayerClient.sendReliableMessage(
-                    ("cw" + whiteCardText).getBytes("utf-8"),
-                    mRoomId,
-                    czarId,
-                    null
+        targetWhite.setBackgroundResource(R.drawable.selected_white); //Set card to selected
+        targetCard = targetWhite;
 
-            );
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        if (!isCzar) { targetWhite.setTag(false); }
+        if (!isCzar || numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
 
-    private void chooseCard(View view) {
-        Button chosenCard = (Button) view;
+    public void chooseCard(View view) {
+        findViewById(R.id.sendCardButton).setEnabled(false);
+        if (isCzar) {
+            String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+            updateBlack(newBlack);
+            sendMsg("newblack " + newBlack);
 
-        String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
-        updateBlack(newBlack);
-        sendMsg("newblack " + newBlack);
+            String winningCardText = targetCard.getText().toString();
+            String winnerId = targetCard.getTag().toString();
 
-        String winningCardText = chosenCard.getText().toString();
-        String winnerId = chosenCard.getTag().toString();
+            sendMsg("win " + targetCard.getText().toString() + " winnerId " + winnerId);
+            updateWins(winningCardText, winnerId);
 
-        sendMsg("win " + chosenCard.getText().toString() + " winnerId " + winnerId);
-        updateWins(winningCardText, winnerId);
+            //Clear all cards from bottom of screen
+            ((ViewGroup) findViewById(R.id.whitesScrolledLayout)).removeAllViews();
 
-        //Clear all cards from bottom of screen
-        ((ViewGroup) view.getParent()).removeAllViews();
+            //Update numReceived to ensure all played before czar makes selection
+            numReceived = 0;
+        } else {
+            //Disable all cards
+            LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
+            for (int i = 0; i < whitesScrolledLayout.getChildCount(); i++) {
+                whitesScrolledLayout.getChildAt(i).setEnabled(false);
+            }
+            whitesScrolledLayout.removeView(targetCard);
+            //Share white card with czar
+            String whiteCardText = targetCard.getText().toString();
+            try {
+                mRealTimeMultiplayerClient.sendReliableMessage(
+                        ("cw" + whiteCardText).getBytes("utf-8"),
+                        mRoomId,
+                        czarId,
+                        null
+
+                );
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     //Messaging
@@ -671,7 +691,7 @@ public class mainGame extends AppCompatActivity {
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            chooseCard(v);
+                            highlightCard(v);
                         }
                     }
             );
@@ -710,7 +730,7 @@ public class mainGame extends AppCompatActivity {
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onWhiteCardClicked(v);
+                        highlightCard(v);
                     }
                 }
         );

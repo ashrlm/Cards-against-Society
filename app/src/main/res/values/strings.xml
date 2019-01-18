@@ -18,4 +18,6 @@
     <string name="title_activity_score_sheet">scoreSheet</string>
     <string name="loading_message">Please wait while the game loads</string>
     <string name="go_home">Return to homepage</string>
+    <string name="choose_card_czar">Select winner</string>
+    <string name="choose_card_player">Play card</string>
 </resources>
