@@ -433,8 +433,6 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO (Bugs to fix) :
         - Different number of cards per person
-        - No text in status bar
-        - The scoresheet is showing the name of the person whose device it is, not the person who won it (Likely due to idNames not being updated but I don't have time to check right now)
      */
 
     /* TODO: (Necessary Features)
@@ -522,7 +520,9 @@ public class mainGame extends AppCompatActivity {
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
             buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
-            buttonsLayout.getChildAt(i).setTag(true);
+            if (!isCzar) {
+                buttonsLayout.getChildAt(i).setTag(true);
+            }
         }
         targetWhite.setBackgroundResource(R.drawable.selected_white); //Set card to selected
         targetCard = targetWhite;
@@ -681,7 +681,6 @@ public class mainGame extends AppCompatActivity {
                 }
             }
             //This player hasn't played yet - Add their card
-            LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
             //Add deck buttons
             Button playedWhiteCardBtn = new Button(getApplicationContext());
             playedWhiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
@@ -709,7 +708,7 @@ public class mainGame extends AppCompatActivity {
             playedWhiteCardBtn.setSingleLine(false);
             playedWhiteCardBtn.setTextColor(Color.DKGRAY);
             playedWhiteCardBtn.setTextSize(5 * scale + .5f);
-            whiteCardsLayout.addView(playedWhiteCardBtn);
+            whitesPlayed.addView(playedWhiteCardBtn);
         }
     }
 
