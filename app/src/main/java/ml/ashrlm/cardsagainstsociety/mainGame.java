@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
@@ -54,9 +55,11 @@ public class mainGame extends AppCompatActivity {
     private String mRoomId;
     private int numPerDeck;
     private static long role;
+    private String mPlayerId;
     private Button targetCard;
     private int numPlayed = 0;
     private int numReceived = 0;
+    private String mParticipantId;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private boolean mPlaying = false;
@@ -124,7 +127,7 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private void onConnected(GoogleSignInAccount signedInAccount) {
+    private void onConnected(final GoogleSignInAccount signedInAccount) {
         if (mSignedInAccount!= signedInAccount) {
 
             mSignedInAccount = signedInAccount;
@@ -136,6 +139,7 @@ public class mainGame extends AppCompatActivity {
                         @Override
                         public void onSuccess(Player player) {
                             mName = player.getDisplayName();
+                            mPlayerId = player.getPlayerId();
                             Log.d(TAG, "name: " + mName);
                         }
                     });
@@ -432,7 +436,7 @@ public class mainGame extends AppCompatActivity {
     //------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix) :
-        - Different number of cards per person
+        - None (for now)
      */
 
     /* TODO: (Necessary Features)
@@ -469,6 +473,7 @@ public class mainGame extends AppCompatActivity {
 
         chooseCardBtn = findViewById(R.id.sendCardButton);
         mPlaying = true;
+        mParticipantId = mRoom.getParticipantId(mPlayerId);
         sendMsg("name" + mName); //Share name
 
         if (isCzar) {
@@ -482,6 +487,7 @@ public class mainGame extends AppCompatActivity {
             //Send decks to all participants
 
             for (int i = 0; i < mParticipants.size(); i++) {
+                if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { Log.d(TAG, "mPartId"); continue; }
                 for (String card : whiteCardsSplit.get(i)) {
                     sendTargetedMsg("w" + card, mParticipants.get(i));
                 }
@@ -498,18 +504,22 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private ArrayList<ArrayList<String>> splitDeck (ArrayList<String> deck) {
+    private ArrayList<ArrayList<String>> splitDeck(ArrayList<String> deck) {
         ArrayList<ArrayList<String>> cardsSplit = new ArrayList<>();
-        for (int i = 0; i < mParticipants.size(); i++) {
+        numPerDeck = Math.min(10, (int) Math.floor(deck.size() / mParticipants.size() - 1));
+        for (int i = 0; i < mParticipants.size() - 1; i++) {
             ArrayList<String> cardsTmp = new ArrayList<>();
-            for (int j = 0; j < Math.min(10, Math.floor(deck.size() / mParticipants.size())); j++) {
+            for (int j = 0; j < numPerDeck; j++) {
                 String newCard = deck.get(new Random().nextInt(deck.size()));
                 cardsTmp.add(newCard);
                 deck.remove(newCard);
             }
             cardsSplit.add(cardsTmp);
         }
-        numPerDeck = cardsSplit.get(0).size();
+
+        for (ArrayList<String> splitDeck : cardsSplit) {
+            Log.d(TAG, "Split deck size: " + String.valueOf(splitDeck.size()));
+        }
         return cardsSplit;
     }
 
