@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -74,6 +75,7 @@ public class mainGame extends AppCompatActivity {
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private boolean mPlaying = false;
+    private AlertDialog deckSelection;
     private BigInteger mCzarSubmission;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
@@ -185,11 +187,17 @@ public class mainGame extends AppCompatActivity {
                 if (message.startsWith("czarnum")) {
                     czarNums.add(new BigInteger(message.substring(7)));
                     if (czarNums.size() == mParticipants.size()) {
+                        setupGame();
                         if (mCzarSubmission.equals(Collections.max(czarNums))) {
                             isCzar = true;
+                            Log.d(TAG, "Czar");
+                            // Request cards
                             requestCards();
+                        } else {
+                            Log.d(TAG, "Not czar");
+                            runGame();
                         }
-                        runGame();
+
                     }
 
                 } else if (message.startsWith("name")) {
@@ -278,6 +286,7 @@ public class mainGame extends AppCompatActivity {
         public void onRoomConnected(int statusCode, @Nullable Room room) {
             Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
+            mParticipantId = mRoom.getParticipantId(mPlayerId);
             mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
             czarNums.add(mCzarSubmission);
             sendMsg("czarnum" + String.valueOf(mCzarSubmission));
@@ -447,7 +456,7 @@ public class mainGame extends AppCompatActivity {
             }
         }
         Log.e(TAG, "roomLeft");
-        if (mRoom != null) { mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId); }
+        if (mRoom != null && mRealTimeMultiplayerClient != null && mRoomConfig != null) { mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId); }
     }
 
     protected void onResume() {
@@ -472,15 +481,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Necessary Features)
 
-        - Require a czar to be present (DOING NOW)
-            - Only one button on homepage
-            - Does what join_game does now
-            - Pick czar once game started
-                - Everyone submit mPlayerId[2:} to everyone (store all (self included) in a list
-                - The largest is the czar
-                - Show popup with checkboxes to select what can be played
-                - set isCzar
-                - runGame();
+        - Add tutorial button in homepage (Keep 4 buttons as newGame is leaving
 
         - Add support for choose multiple
             - PLAYER
@@ -489,8 +490,6 @@ public class mainGame extends AppCompatActivity {
                 - show in stack that expands horizontally and replaces all other cards
                 - Disable select_winner when not in stack
                 - Return button first in stack
-
-        - Add tutorial button in homepage (Keep 4 buttons as newGame is leaving
      */
 
     /* TODO: (Optional features)
@@ -506,34 +505,37 @@ public class mainGame extends AppCompatActivity {
 
     private void runGame() {
 
-        Log.d(TAG, "Game started!");
-        setContentView(R.layout.main_game);
-        Toolbar myToolbar = findViewById(R.id.my_toolbar);
-        myToolbar.setTitle("Cards against Society");
-        setSupportActionBar(myToolbar);
+        Log.d(TAG, "runGame();");
 
         chooseCardBtn = findViewById(R.id.sendCardButton);
-        mPlaying = true;
-        mParticipantId = mRoom.getParticipantId(mPlayerId);
+       
         sendMsg("name" + mName); // Share name
 
         if (isCzar) {
+
             chooseCardBtn.setEnabled(false);
             chooseCardBtn.setText(R.string.choose_card_czar);
 
             // Split decks
             wonCards = new HashMap<>();
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
-            // Send decks to all participants
 
+            // Send decks to all participants
             for (int i = 0; i < mParticipants.size(); i++) {
-                if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { Log.d(TAG, "mPartId"); continue; }
-                for (String card : whiteCardsSplit.get(i)) {
+                if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { continue; }
+                ArrayList<String> targetDeck;
+                try {
+                    targetDeck = whiteCardsSplit.get(i);
+                } catch (IndexOutOfBoundsException e) {
+                    targetDeck = whiteCardsSplit.get(i-1);
+                }
+                for (String card : targetDeck) {
                     sendTargetedMsg("w" + card, mParticipants.get(i));
                 }
             }
 
             // Send initial black card
+            Log.d(TAG, "numBlacks: " + blackCards.size());
             String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
             blackCards.remove(newBlack);
             updateBlack(newBlack);
@@ -567,8 +569,8 @@ public class mainGame extends AppCompatActivity {
 
     private void requestCards() {
         View layoutInflated = getLayoutInflater().inflate(R.layout.czar_selection, null);
+        ((ViewGroup) layoutInflated).removeView(layoutInflated.findViewById(R.id.tryPlayButton));
         LinearLayout cardsLayout = layoutInflated.findViewById(R.id.layout_decks);
-        Log.d(TAG, "layout: " + cardsLayout);
 
         final ArrayList<CheckBox> checkboxes = new ArrayList<>();
         // Create checkboxes for deck selection
@@ -607,10 +609,12 @@ public class mainGame extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // Card selection validation & loading
-                boolean whiteSelected = false, blackSelected = false;
+                boolean whiteSelected = false;
+                boolean blackSelected = false;
                 for (CheckBox deck : checkboxes) {
                     try {
-                        if (deck.getTag().equals("white") && deck.isSelected()) {
+                        Log.d(TAG, "deckMd: " + deck.getTag().toString() +  deck.isChecked());
+                        if (deck.getTag().equals("white") && deck.isChecked()) {
                             whiteSelected = true;
                             File whiteDeck = new File(getFilesDir().getAbsolutePath() + "/white/" + deck.getText().toString());
                             if (whiteDeck.exists()) {
@@ -630,7 +634,7 @@ public class mainGame extends AppCompatActivity {
                                     whiteCards.add(mLine);
                                 }
                             }
-                        } else if (deck.getTag().equals("black") && deck.isSelected()) {
+                        } else if (deck.getTag().equals("black") && deck.isChecked()) {
                             blackSelected = true;
                             File blackDeck = new File(getFilesDir().getAbsolutePath() + "/black/" + deck.getText().toString());
                             if (blackDeck.exists()) {
@@ -656,13 +660,17 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
 
-                if (!(whiteSelected && blackSelected)) { return; }
-
-                runGame();
+                Log.d(TAG, "whiteSelected: " + whiteSelected);
+                Log.d(TAG, "blackSelected: " + blackSelected);
+                if ((whiteSelected && blackSelected)) {
+                    runGame();
+                } else {
+                    deckSelection.show();
+                }
 
             }
         });
-        AlertDialog deckSelection = decksBuilder.create();
+        deckSelection = decksBuilder.create();
         deckSelection.show();
     }
 
@@ -925,5 +933,14 @@ public class mainGame extends AppCompatActivity {
             namedWins.put(idNames.get(win.getKey()), win.getValue());
         }
         return namedWins;
+    }
+
+    private void setupGame() {
+        Log.d(TAG, "Game started!");
+        setContentView(R.layout.main_game);
+        Toolbar myToolbar = findViewById(R.id.my_toolbar);
+        myToolbar.setTitle("Cards against Society");
+        setSupportActionBar(myToolbar);
+        mPlaying = true;
     }
 }
