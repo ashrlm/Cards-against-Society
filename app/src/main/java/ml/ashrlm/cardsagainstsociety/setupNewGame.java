@@ -41,7 +41,7 @@ public class setupNewGame extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.activity_setup_new_game);
+        setContentView(R.layout.czar_selection);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society - Select decks");
         setSupportActionBar(myToolbar);
@@ -58,6 +58,7 @@ public class setupNewGame extends AppCompatActivity {
             whiteBox.setTextSize(18);
             CompoundButtonCompat.setButtonTintList(whiteBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
             checkboxes.add(whiteBox);
+            Log.d(TAG, "layout: " + String.valueOf(layout));
             layout.addView(whiteBox);
         } //Black boxes
         deckColor = "black";

@@ -6,7 +6,7 @@
                            <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>
     </string>
     <string name="title_activity_select_players">selectPlayers</string>
-    <string name="app_id">115230244370</string>
+    <string name="app_id">1084461744455</string>
     <string name="title_activity_edit_decks">editDecks</string>
     <string name="app_header">Cards against \n Society</string>
     <string name="game_results"><u>Game Results</u></string>
@@ -20,4 +20,5 @@
     <string name="go_home">Return to homepage</string>
     <string name="choose_card_czar">Select winner</string>
     <string name="choose_card_player">Play card</string>
+    <string name="start_game">Start game</string>
 </resources>

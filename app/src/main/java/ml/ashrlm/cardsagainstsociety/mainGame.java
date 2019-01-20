@@ -3,12 +3,14 @@ package ml.ashrlm.cardsagainstsociety;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.provider.Telephony;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -39,9 +42,16 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,22 +69,23 @@ public class mainGame extends AppCompatActivity {
     private Button targetCard;
     private int numPlayed = 0;
     private int numReceived = 0;
+    private Button chooseCardBtn;
     private String mParticipantId;
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private boolean mPlaying = false;
+    private BigInteger mCzarSubmission;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
-    private HashMap<String, String> playedCards; //Used by the czar
     private GoogleSignInAccount mSignedInAccount;
+    private boolean returnedFromWaitingUi = false; // Used until custom waiting room UI
     private static final int RC_WAITING_ROOM = 9007;
-    private HashMap<String, ArrayList<String>> wonCards; //Used for scoresheet
-    private boolean returnedFromWaitingUi = false; //Used until custom waiting room UI
+    private HashMap<String, ArrayList<String>> wonCards; // Used for scoresheet
     private HashMap<String, String> idNames = new HashMap();
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
+    private ArrayList<BigInteger> czarNums = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
-    private Button chooseCardBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,8 +98,6 @@ public class mainGame extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         Intent intentFromHomepage = getIntent();
         role = intentFromHomepage.getIntExtra("role", 0x0);
-        whiteCards = intentFromHomepage.getStringArrayListExtra("whiteCards");
-        blackCards = intentFromHomepage.getStringArrayListExtra("blackCards");
         if (role == 0x1) { isCzar = true; }
     }
 
@@ -140,6 +149,7 @@ public class mainGame extends AppCompatActivity {
                         public void onSuccess(Player player) {
                             mName = player.getDisplayName();
                             mPlayerId = player.getPlayerId();
+                            Log.d(TAG, "mPlayerId: " + mPlayerId);
                             Log.d(TAG, "name: " + mName);
                         }
                     });
@@ -163,7 +173,7 @@ public class mainGame extends AppCompatActivity {
         mRealTimeMultiplayerClient.create(mRoomConfig);
     }
 
-    //Message handler
+    // Message handler
     OnRealTimeMessageReceivedListener mOnRealTimeMessageReceivedListener = new OnRealTimeMessageReceivedListener() {
         @Override
         public void onRealTimeMessageReceived(@NonNull RealTimeMessage realTimeMessage) {
@@ -172,14 +182,24 @@ public class mainGame extends AppCompatActivity {
             try {
                 String message = new String(buf, "utf-8");
 
-                if (message.startsWith("name")) {
+                if (message.startsWith("czarnum")) {
+                    czarNums.add(new BigInteger(message.substring(7)));
+                    if (czarNums.size() == mParticipants.size()) {
+                        if (mCzarSubmission.equals(Collections.max(czarNums))) {
+                            isCzar = true;
+                            requestCards();
+                        }
+                        runGame();
+                    }
+
+                } else if (message.startsWith("name")) {
                     Log.d(TAG, "New Name: " + message.substring(4));
                     idNames.put(senderId, message.substring(4));
                     Log.d(TAG, "name hashmap: " + idNames);
 
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
-                    //Game over
+                    // Game over
                     mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
                     finish();
                     Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
@@ -189,16 +209,16 @@ public class mainGame extends AppCompatActivity {
 
                 } else if (message.startsWith("newblack")) {
                     Log.d(TAG, "newblack: " + message.substring(9));
-                    //Message in format of "newblack [NEW BLACK CARD]"
+                    // Message in format of "newblack [NEW BLACK CARD]"
                     updateBlack(message.substring(9));
 
                 } else if (message.startsWith("win")) {
                     Log.d(TAG, "win: " + message.substring(4));
-                    //Message in format of win [text on card] winnerId [winnerId]
+                    // Message in format of win [text on card] winnerId [winnerId]
                     String winnerId = message.substring(message.lastIndexOf("winnerId") + 9);
                     Log.d(TAG, "winnnerId:" + winnerId);
                     updateWins(message.substring(4, message.lastIndexOf("winnerId") - 1), winnerId);
-                    //Re-enable all bottom cards
+                    // Re-enable all bottom cards
                     LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
                     for (int i = 0; i < whitesScrolledLayout.getChildCount(); i++) {
                         whitesScrolledLayout.getChildAt(i).setEnabled(true);
@@ -206,7 +226,7 @@ public class mainGame extends AppCompatActivity {
 
                 } else if (message.startsWith("cw")) {
                     Log.d(TAG, "whiteReceived: " + message);
-                    //White card sent to czar by player
+                    // White card sent to czar by player
                     updateCzarWhite(message.substring(2), senderId);
                     numReceived++;
                     LinearLayout whiteLayout = findViewById(R.id.whitesScrolledLayout);
@@ -257,7 +277,10 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onRoomConnected(int statusCode, @Nullable Room room) {
             Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
-            runGame();
+
+            mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
+            czarNums.add(mCzarSubmission);
+            sendMsg("czarnum" + String.valueOf(mCzarSubmission));
         }
     };
 
@@ -279,7 +302,8 @@ public class mainGame extends AppCompatActivity {
                         startActivityForResult(intent, RC_WAITING_ROOM);
                         /*NOTE: In time, this will be updated to use a custom UI that better fits
                                 the rest of the app. Do not worry about the weird behaviour of back,
-                                this will be fixed when a custom waiting room UI is implemented.*/
+                                this will be fixed when a custom waiting room UI is implemented, as it will only
+                                change layout, not activity.*/
                     }
                 });
     }
@@ -290,7 +314,7 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onConnectedToRoom(Room room) {
 
-            //get participants and my ID:
+            // get participants and my ID:
             mParticipants = room.getParticipants();
 
             // save room ID if its not initialized in onRoomCreated() so we can leave cleanly before the game starts.
@@ -306,6 +330,7 @@ public class mainGame extends AppCompatActivity {
             mRoomId = null;
             mRoomConfig = null;
             finish();
+            leaveRoomPrep(room);
         }
 
         // We treat most of the room update callbacks in the same way: we update our list of
@@ -382,9 +407,9 @@ public class mainGame extends AppCompatActivity {
 
     private void leaveRoomPrep(Room room) {
         if (mPlaying) {
-            //Tell others players what to do after we leave
+            // Tell others players what to do after we leave
             if (isCzar) {
-                //Czar left - Tell others to leave
+                // Czar left - Tell others to leave
                 for (Participant p : room.getParticipants()) {
                     try {
                         Log.d(TAG, "leaveMsg sent");
@@ -401,9 +426,9 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
             } else {
-                //Not as important to the game - May be able to leave freely
+                // Not as important to the game - May be able to leave freely
                 if (room.getParticipants().size() <= 3) {
-                    //Once this player leaves, game will be too boring - end game
+                    // Once this player leaves, game will be too boring - end game
                     for (Participant p : room.getParticipants()) {
                         try {
                             Log.d(TAG, "leaveMsg sent");
@@ -422,7 +447,7 @@ public class mainGame extends AppCompatActivity {
             }
         }
         Log.e(TAG, "roomLeft");
-        mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId);
+        if (mRoom != null) { mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId); }
     }
 
     protected void onResume() {
@@ -433,34 +458,50 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    //------------------------------------Main Game logic-------------------------------------------
+    // ------------------------------------Main Game logic-------------------------------------------
 
-    /* TODO (Bugs to fix) :
-        - None (for now)
+    /* TODO (Bugs to fix):
+        - Weird crash in runGame if isCzar
+        - Czar selection popup thingy not showing
+     */
+
+    /* TODO: (Refactor)
+       - Convert EVERYTHING IN APP (User facing) to @string
+       - Replace all unnecesary sendReliableMessage with sendMsg
      */
 
     /* TODO: (Necessary Features)
 
-        - Custom waiting room UI? idk but this would sort out the below one which is def necessary so... maybe?
-
-        - Require a czar to be present
-            - Find some way of requiring a role in automatch
-                               OR
-            - If none is present at game start time, choose one and let them select decks (Require initial role submission to all? not quite sure how this would work)
+        - Require a czar to be present (DOING NOW)
+            - Only one button on homepage
+            - Does what join_game does now
+            - Pick czar once game started
+                - Everyone submit mPlayerId[2:} to everyone (store all (self included) in a list
+                - The largest is the czar
+                - Show popup with checkboxes to select what can be played
+                - set isCzar
+                - runGame();
 
         - Add support for choose multiple
             - PLAYER
                 - Highlight multiple
             - CZAR
                 - show in stack that expands horizontally and replaces all other cards
-                - Have "SELECT WINNER" button in this stack
+                - Disable select_winner when not in stack
+                - Return button first in stack
+
+        - Add tutorial button in homepage (Keep 4 buttons as newGame is leaving
      */
 
     /* TODO: (Optional features)
-        - In scores on side, when a card has to be wrapped, it loses indentation. Fix this. (Find better solution than adding spaces at start)
+        - In scores on side, when a card has to be wrapped, it loses indentation. Fix this. (Find better solution than adding spaces at start) LOW
 
-        - Add voice chat
+        - Add voice chat LOW
             - Icons for mute/silence in status bar
+
+
+        - Custom waiting room UI MID
+
      */
 
     private void runGame() {
@@ -474,17 +515,16 @@ public class mainGame extends AppCompatActivity {
         chooseCardBtn = findViewById(R.id.sendCardButton);
         mPlaying = true;
         mParticipantId = mRoom.getParticipantId(mPlayerId);
-        sendMsg("name" + mName); //Share name
+        sendMsg("name" + mName); // Share name
 
         if (isCzar) {
             chooseCardBtn.setEnabled(false);
             chooseCardBtn.setText(R.string.choose_card_czar);
 
-            //Split decks
+            // Split decks
             wonCards = new HashMap<>();
-            playedCards = new HashMap<>();
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
-            //Send decks to all participants
+            // Send decks to all participants
 
             for (int i = 0; i < mParticipants.size(); i++) {
                 if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { Log.d(TAG, "mPartId"); continue; }
@@ -493,7 +533,7 @@ public class mainGame extends AppCompatActivity {
                 }
             }
 
-            //Send initial black card
+            // Send initial black card
             String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
             blackCards.remove(newBlack);
             updateBlack(newBlack);
@@ -523,7 +563,125 @@ public class mainGame extends AppCompatActivity {
         return cardsSplit;
     }
 
-    // Card selection
+    // Czar selection code
+
+    private void requestCards() {
+        View layoutInflated = getLayoutInflater().inflate(R.layout.czar_selection, null);
+        LinearLayout cardsLayout = layoutInflated.findViewById(R.id.layout_decks);
+        Log.d(TAG, "layout: " + cardsLayout);
+
+        final ArrayList<CheckBox> checkboxes = new ArrayList<>();
+        // Create checkboxes for deck selection
+        // White boxes
+        String deckColor = "white";
+        ArrayList<String> whiteDecks = getDecks(deckColor);
+        for (String deck : whiteDecks) {
+            CheckBox whiteBox = new CheckBox(this);
+            whiteBox.setText(deck);
+            whiteBox.setTag(deckColor);
+            whiteBox.setTextSize(18);
+            CompoundButtonCompat.setButtonTintList(whiteBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
+            checkboxes.add(whiteBox);
+            cardsLayout.addView(whiteBox);
+        } // Black boxes
+        deckColor = "black";
+        TextView divider = new TextView(this);
+        cardsLayout.addView(divider);
+        ArrayList<String> blackDecks = getDecks(deckColor);
+        for (String deck : blackDecks) {
+            CheckBox blackBox = new CheckBox(this);
+            blackBox.setText(deck);
+            blackBox.setTag(deckColor);
+            blackBox.setTextSize(18);
+            CompoundButtonCompat.setButtonTintList(blackBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
+            checkboxes.add(blackBox);
+            cardsLayout.addView(blackBox);
+        }
+
+        // Create dialog
+        AlertDialog.Builder decksBuilder = new AlertDialog.Builder(mainGame.this);
+        decksBuilder.setTitle("Select playable decks");
+        decksBuilder.setCancelable(false);
+        decksBuilder.setView(layoutInflated);
+        decksBuilder.setPositiveButton(R.string.start_game, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Card selection validation & loading
+                boolean whiteSelected = false, blackSelected = false;
+                for (CheckBox deck : checkboxes) {
+                    try {
+                        if (deck.getTag().equals("white") && deck.isSelected()) {
+                            whiteSelected = true;
+                            File whiteDeck = new File(getFilesDir().getAbsolutePath() + "/white/" + deck.getText().toString());
+                            if (whiteDeck.exists()) {
+                                BufferedReader br = new BufferedReader(new FileReader(whiteDeck));
+                                String line;
+
+                                while ((line = br.readLine()) != null) {
+                                    whiteCards.add(line);
+                                }
+                                br.close();
+                            } else {
+                                BufferedReader reader = new BufferedReader(
+                                        new InputStreamReader(getAssets().open("white/" + deck.getText().toString())));
+
+                                String mLine;
+                                while ((mLine = reader.readLine()) != null) {
+                                    whiteCards.add(mLine);
+                                }
+                            }
+                        } else if (deck.getTag().equals("black") && deck.isSelected()) {
+                            blackSelected = true;
+                            File blackDeck = new File(getFilesDir().getAbsolutePath() + "/black/" + deck.getText().toString());
+                            if (blackDeck.exists()) {
+                                BufferedReader br = new BufferedReader(new FileReader(blackDeck));
+                                String line;
+
+                                while ((line = br.readLine()) != null) {
+                                    blackCards.add(line);
+                                }
+                                br.close();
+                            } else {
+                                BufferedReader reader = new BufferedReader(
+                                        new InputStreamReader(getAssets().open("black/" + deck.getText().toString())));
+
+                                String mLine;
+                                while ((mLine = reader.readLine()) != null) {
+                                    blackCards.add(mLine);
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "Error loading cards: ", e);
+                    }
+                }
+
+                if (!(whiteSelected && blackSelected)) { return; }
+
+                runGame();
+
+            }
+        });
+        AlertDialog deckSelection = decksBuilder.create();
+        deckSelection.show();
+    }
+
+    private ArrayList<String> getDecks (String deckColor) {
+        // Custom decks
+        File tmpFile = new File(getFilesDir().getAbsolutePath() + "/" + deckColor + "/");
+        if (!tmpFile.exists()) { tmpFile.mkdir(); } // Prevent crashes caused by no custom decks existing
+        ArrayList<String> decks = new ArrayList<>(Arrays.asList(tmpFile.list()));
+        // Builtin decks
+        final AssetManager assetmanager = getApplicationContext().getAssets();
+        try {
+            decks.addAll(Arrays.asList(assetmanager.list(deckColor)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return decks;
+    }
+    
+    // Highlight cards
 
     private void highlightCard(View view) {
         Button targetWhite = (Button) view;
@@ -534,7 +692,7 @@ public class mainGame extends AppCompatActivity {
                 buttonsLayout.getChildAt(i).setTag(true);
             }
         }
-        targetWhite.setBackgroundResource(R.drawable.selected_white); //Set card to selected
+        targetWhite.setBackgroundResource(R.drawable.selected_white); // Set card to selected
         targetCard = targetWhite;
 
         if (!isCzar) { targetWhite.setTag(false); }
@@ -554,19 +712,19 @@ public class mainGame extends AppCompatActivity {
             sendMsg("win " + targetCard.getText().toString() + " winnerId " + winnerId);
             updateWins(winningCardText, winnerId);
 
-            //Clear all cards from bottom of screen
+            // Clear all cards from bottom of screen
             ((ViewGroup) findViewById(R.id.whitesScrolledLayout)).removeAllViews();
 
-            //Update numReceived to ensure all played before czar makes selection
+            // Update numReceived to ensure all played before czar makes selection
             numReceived = 0;
         } else {
-            //Disable all cards
+            // Disable all cards
             LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
             for (int i = 0; i < whitesScrolledLayout.getChildCount(); i++) {
                 whitesScrolledLayout.getChildAt(i).setEnabled(false);
             }
             whitesScrolledLayout.removeView(targetCard);
-            //Share white card with czar
+            // Share white card with czar
             String whiteCardText = targetCard.getText().toString();
             try {
                 mRealTimeMultiplayerClient.sendReliableMessage(
@@ -582,7 +740,7 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    //Messaging
+    // Messaging
 
     private void sendMsg(String message) {
         for (Participant p : mParticipants) {
@@ -613,7 +771,7 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    //UI updates
+    // UI updates
 
     private void updateBlack(String newblack) {
         TextView blackPrompt = findViewById(R.id.blackCardMain);
@@ -622,23 +780,23 @@ public class mainGame extends AppCompatActivity {
 
     private void updateWins(String wonCard, String winnerId) {
         Log.d(TAG, "wonCard " + wonCard);
-        //Update wins hashmap
+        // Update wins hashmap
         if (idNames.get(winnerId) == null) {
             idNames.put(winnerId, mName);
         }
         if (wonCards == null) { wonCards = new HashMap<>(); }
         if (wonCards.containsKey(winnerId)) {
-            //Update scores of existing participant
+            // Update scores of existing participant
             wonCards.get(winnerId).add(wonCard);
         } else {
-            //Add participant to scores
+            // Add participant to scores
             ArrayList<String> newWinTmp = new ArrayList<>();
             newWinTmp.add(wonCard);
             Log.d(TAG, "idNames.get(winnerId) " + idNames.get(winnerId));
             wonCards.put(winnerId, newWinTmp);
         }
 
-        //Update list of wins
+        // Update list of wins
         TextView winsText = findViewById(R.id.winsScrolledText);
         String newWinsMsg = "\n\n\nSCORES\n\n";
         for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
@@ -652,7 +810,7 @@ public class mainGame extends AppCompatActivity {
 
         winsText.setText(newWinsMsg);
 
-        //Update tags on own white cards
+        // Update tags on own white cards
         if (!isCzar) {
             LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
             for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
@@ -676,7 +834,6 @@ public class mainGame extends AppCompatActivity {
     }
 
     private void updateCzarWhite(String message, String senderId) {
-        playedCards.put(senderId, message);
         LinearLayout whitesPlayed = findViewById(R.id.whitesScrolledLayout);
         found:
         {
@@ -684,14 +841,14 @@ public class mainGame extends AppCompatActivity {
                 if (whitesPlayed.getChildAt(i).getTag().equals(senderId)) {
                     Button btnToOverwrite = (Button) whitesPlayed.getChildAt(i);
                     if (btnToOverwrite.getTag().equals(senderId)) {
-                        //Overwrite existing button
+                        // Overwrite existing button
                         btnToOverwrite.setText(message);
                         break found;
                     }
                 }
             }
-            //This player hasn't played yet - Add their card
-            //Add deck buttons
+            // This player hasn't played yet - Add their card
+            // Add deck buttons
             Button playedWhiteCardBtn = new Button(getApplicationContext());
             playedWhiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
             playedWhiteCardBtn.setText(message);
@@ -704,7 +861,7 @@ public class mainGame extends AppCompatActivity {
                         }
                     }
             );
-            //Style button
+            // Style button
             playedWhiteCardBtn.setBackgroundResource(R.drawable.white_card);
             final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
             playedWhiteCardBtn.setWidth((int) (100 * scale + .5f));
@@ -724,13 +881,13 @@ public class mainGame extends AppCompatActivity {
 
     private void updatePlayerWhite(String message) {
         Log.d(TAG, String.valueOf(whiteCards));
-        //Received white card from czar - add to list of available cards
+        // Received white card from czar - add to list of available cards
         if (whiteCards == null) { whiteCards = new ArrayList<>(); }
         LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
 
         whiteCards.add(message);
 
-        //Add deck buttons
+        // Add deck buttons
         Button whiteCardBtn = new Button(getApplicationContext());
 
         whiteCardBtn.setLayoutParams(new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
@@ -743,7 +900,7 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
         );
-        //Style button
+        // Style button
         whiteCardBtn.setBackgroundResource(R.drawable.white_card);
         final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
         whiteCardBtn.setWidth((int) (100 * scale + .5f));
@@ -757,7 +914,7 @@ public class mainGame extends AppCompatActivity {
         whiteCardBtn.setSingleLine(false);
         whiteCardBtn.setTextColor(Color.DKGRAY);
         whiteCardBtn.setTextSize(5 * scale + .5f);
-        whiteCardBtn.setTag(true); //Determines playable
+        whiteCardBtn.setTag(true); // Determines playable
         whiteCardsLayout.addView(whiteCardBtn);
     }
 
