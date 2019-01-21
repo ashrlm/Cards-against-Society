@@ -117,17 +117,18 @@ public class homepage extends AppCompatActivity {
     }
 
     //---------------------------------Button response code-----------------------------------------
-    public void newGameButton(View view) {
-        Intent gotoGameSetup = new Intent(this, setupNewGame.class);
-        startActivity(gotoGameSetup);
-    }
 
-    public void joinGameButton(View view) {
+    public void playGameButton(View view) {
         Intent gotoLobby = new Intent(this, mainGame.class);
         Bundle data = new Bundle();
         data.putInt("role", 0x0); //Allow join any game
         gotoLobby.putExtras(data);
         startActivity(gotoLobby);
+    }
+
+    public void tutorialButton(View view) {
+        Intent gotoGameSetup = new Intent(this, tutorial.class);
+        startActivity(gotoGameSetup);
     }
 
     public void editDecksButton(View view) {

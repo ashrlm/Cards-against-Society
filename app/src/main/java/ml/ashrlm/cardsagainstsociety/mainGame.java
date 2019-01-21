@@ -211,7 +211,7 @@ public class mainGame extends AppCompatActivity {
                     mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
                     finish();
                     Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                    HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
+                    HashMap<String, ArrayList<String>> namedWonCards = replaceIds();
                     showScores.putExtra("scores", namedWonCards);
                     startActivity(showScores);
 
@@ -470,8 +470,7 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix):
-        - Weird crash in runGame if isCzar
-        - Czar selection popup thingy not showing
+        - Same hands just shuffled
      */
 
     /* TODO: (Refactor)
@@ -834,7 +833,7 @@ public class mainGame extends AppCompatActivity {
                 mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
                 finish();
                 Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                HashMap<String, ArrayList<String>> namedWonCards = replaceIds(wonCards);
+                HashMap<String, ArrayList<String>> namedWonCards = replaceIds();
                 showScores.putExtra("scores", namedWonCards);
                 startActivity(showScores);
             }
@@ -927,9 +926,9 @@ public class mainGame extends AppCompatActivity {
     }
 
     // Misc
-    private HashMap<String, ArrayList<String>> replaceIds (HashMap<String, ArrayList<String>> idWins) {
+    private HashMap<String, ArrayList<String>> replaceIds () {
         HashMap<String, ArrayList<String>> namedWins = new HashMap<>();
-        for (Map.Entry<String, ArrayList<String>> win : idWins.entrySet()) {
+        for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
             namedWins.put(idNames.get(win.getKey()), win.getValue());
         }
         return namedWins;
