@@ -370,6 +370,9 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onPeerLeft(Room room, @NonNull List<String> peersWhoLeft) {
             updateRoom(room);
+            if (peersWhoLeft.contains(czarId) || mParticipants.size() <= 3) {
+                leaveRoomPrep(room);
+            }
         }
 
         @Override
@@ -442,7 +445,6 @@ public class mainGame extends AppCompatActivity {
     /* TODO (Bugs to fix):
         - Sometimes exact same white decks, just shuffled
         - In deck selection alert dialog, only dismiss if decks are selected
-        - Add checking for need to disconnect in onP2PDisconnected
      */
 
     /* TODO: (Refactor)
