@@ -451,7 +451,6 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Refactor)
        - Convert EVERYTHING IN APP (User facing) to @string
-       - Replace all unnecesary sendReliableMessage with sendMsg
      */
 
     /* TODO: (Necessary Features)
@@ -708,17 +707,6 @@ public class mainGame extends AppCompatActivity {
             whitesScrolledLayout.removeView(targetCard);
             // Share white card with czar
             String whiteCardText = targetCard.getText().toString();
-            try {
-                mRealTimeMultiplayerClient.sendReliableMessage(
-                        ("cw" + whiteCardText).getBytes("utf-8"),
-                        mRoomId,
-                        czarId,
-                        null
-
-                );
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
             sendTargetedMsg("cw" + whiteCardText, czarId);
         }
     }
