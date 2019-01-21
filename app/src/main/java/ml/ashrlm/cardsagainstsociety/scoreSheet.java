@@ -128,4 +128,7 @@ public class scoreSheet extends AppCompatActivity {
         return sorted;
     }
 
+    public void goHome(View v) {
+        finish();
+    }
 }

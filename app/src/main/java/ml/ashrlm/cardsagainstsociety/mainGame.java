@@ -22,6 +22,7 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -196,6 +197,7 @@ public class mainGame extends AppCompatActivity {
                             requestCards();
                         } else {
                             Log.d(TAG, "Not czar");
+                            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_LONG).show();
                             runGame();
                         }
 
@@ -444,7 +446,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO (Bugs to fix):
         - Sometimes exact same white decks, just shuffled
-        - In deck selection alert dialog, only dismiss if decks are selected
+        - In deck selection alert dialog, only dismiss if decks are selected || disable start game until one of each is selected
      */
 
     /* TODO: (Refactor)
@@ -502,7 +504,7 @@ public class mainGame extends AppCompatActivity {
                     targetDeck = whiteCardsSplit.get(i-1);
                 }
                 for (String card : targetDeck) {
-                    sendTargetedMsg("w" + card, mParticipants.get(i));
+                    sendTargetedMsg("w" + card, mParticipants.get(i).getParticipantId());
                 }
             }
 
@@ -717,6 +719,7 @@ public class mainGame extends AppCompatActivity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
+            sendTargetedMsg("cw" + whiteCardText, czarId);
         }
     }
 
@@ -741,12 +744,12 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private void sendTargetedMsg(String message, Participant p) {
+    private void sendTargetedMsg(String message, String targetId) {
         try {
             mRealTimeMultiplayerClient.sendReliableMessage(
                     message.getBytes("utf-8"),
                     mRoomId,
-                    p.getParticipantId(),
+                    targetId,
                     null
             );
         } catch (UnsupportedEncodingException e) {

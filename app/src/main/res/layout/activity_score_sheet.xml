@@ -39,16 +39,16 @@
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_marginStart="30dp"
-        android:layout_marginTop="16dp"
         android:layout_marginEnd="30dp"
-        android:layout_marginBottom="130dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/button"
+        android:onClick="goHome"
         android:text="@string/go_home"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/nestedScrollView4" />
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <android.support.v4.widget.NestedScrollView
         android:id="@+id/nestedScrollView4"

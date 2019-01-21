@@ -22,4 +22,5 @@
     <string name="choose_card_player">Play card</string>
     <string name="start_game">Start game</string>
     <string name="title_activity_tutorial">tutorial</string>
+    <string name="wait_for_czar">Please wait while the czar selects the avaliable decks</string>
 </resources>
