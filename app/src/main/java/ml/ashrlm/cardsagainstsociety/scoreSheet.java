@@ -63,26 +63,6 @@ public class scoreSheet extends AppCompatActivity {
                 scoreList.addView(newCard);
             }
         }
-        Button homeBtn = new Button(this);
-        homeBtn.setText("Home");
-        final float scale = getApplicationContext().getResources().getDisplayMetrics().density;
-        homeBtn.setTextSize(12 * scale + .5f);
-        homeBtn.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent returnToHomepage = new Intent(getApplicationContext(), homepage.class);
-                        finish();
-                        startActivity(returnToHomepage);
-                    }
-                }
-        );
-        homeBtn.setBackgroundResource(R.drawable.button);
-        scoreList.addView(homeBtn);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        lp.setMargins(lp.leftMargin, (int) (50 * scale + .5f), lp.rightMargin, lp.bottomMargin);
-        homeBtn.setLayoutParams(lp);
-        homeBtn.getLayoutParams().height= (int) (100 * scale + .5f);
     }
 
     @Override

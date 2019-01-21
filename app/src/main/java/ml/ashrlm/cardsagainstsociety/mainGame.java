@@ -75,6 +75,7 @@ public class mainGame extends AppCompatActivity {
     private RoomConfig mRoomConfig;
     private boolean isCzar = false;
     private boolean mPlaying = false;
+    private boolean gameOver = false;
     private AlertDialog deckSelection;
     private BigInteger mCzarSubmission;
     private List<Participant> mParticipants;
@@ -82,12 +83,12 @@ public class mainGame extends AppCompatActivity {
     private GoogleSignInAccount mSignedInAccount;
     private boolean returnedFromWaitingUi = false; // Used until custom waiting room UI
     private static final int RC_WAITING_ROOM = 9007;
-    private HashMap<String, ArrayList<String>> wonCards; // Used for scoresheet
-    private HashMap<String, String> idNames = new HashMap();
+    private HashMap<String, String> idNames = new HashMap<>();
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
     private ArrayList<BigInteger> czarNums = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
+    private HashMap<String, ArrayList<String>> wonCards = new HashMap<>(); // Used for scoresheet
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -208,12 +209,7 @@ public class mainGame extends AppCompatActivity {
                 } else if (message.equals("leave")) {
                     Log.d(TAG, "leaveMsgReceived");
                     // Game over
-                    mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
-                    finish();
-                    Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                    HashMap<String, ArrayList<String>> namedWonCards = replaceIds();
-                    showScores.putExtra("scores", namedWonCards);
-                    startActivity(showScores);
+                    leaveRoomPrep(mRoom);
 
                 } else if (message.startsWith("newblack")) {
                     Log.d(TAG, "newblack: " + message.substring(9));
@@ -336,10 +332,11 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onDisconnectedFromRoom(Room room) {
             Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
-            mRoomId = null;
-            mRoomConfig = null;
-            finish();
-            leaveRoomPrep(room);
+            if (mPlaying) {
+                mRoomId = null;
+                mRoomConfig = null;
+                leaveRoomPrep(room);
+            }
         }
 
         // We treat most of the room update callbacks in the same way: we update our list of
@@ -358,6 +355,7 @@ public class mainGame extends AppCompatActivity {
 
         @Override
         public void onP2PDisconnected(@NonNull String participant) {
+
         }
 
         @Override
@@ -417,42 +415,14 @@ public class mainGame extends AppCompatActivity {
     private void leaveRoomPrep(Room room) {
         if (mPlaying) {
             // Tell others players what to do after we leave
-            if (isCzar) {
-                // Czar left - Tell others to leave
-                for (Participant p : room.getParticipants()) {
-                    try {
-                        Log.d(TAG, "leaveMsg sent");
-
-                        mRealTimeMultiplayerClient.sendReliableMessage(
-                                "leave".getBytes("utf-8"),
-                                mRoomId,
-                                p.getParticipantId(),
-                                null
-                        );
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                        Log.e(TAG, String.valueOf(e));
-                    }
-                }
-            } else {
-                // Not as important to the game - May be able to leave freely
-                if (room.getParticipants().size() <= 3) {
-                    // Once this player leaves, game will be too boring - end game
-                    for (Participant p : room.getParticipants()) {
-                        try {
-                            Log.d(TAG, "leaveMsg sent");
-                            mRealTimeMultiplayerClient.sendReliableMessage(
-                                    "leave".getBytes("utf-8"),
-                                    mRoomId,
-                                    p.getParticipantId(),
-                                    null
-                            );
-                        } catch (UnsupportedEncodingException e) {
-                            e.printStackTrace();
-                            Log.e(TAG, String.valueOf(e));
-                        }
-                    }
-                }
+            mPlaying = false;
+            if (isCzar || room.getParticipants().size() <= 3 || gameOver) {
+                sendMsg("leave");
+                finish();
+                Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
+                HashMap<String, ArrayList<String>> namedWonCards = replaceIds();
+                showScores.putExtra("scores", namedWonCards);
+                startActivity(showScores);
             }
         }
         Log.e(TAG, "roomLeft");
@@ -470,7 +440,9 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix):
-        - Same hands just shuffled
+        - Sometimes exact same white decks, just shuffled
+        - In deck selection alert dialog, only dismiss if decks are selected
+        - Add checking for need to disconnect in onP2PDisconnected
      */
 
     /* TODO: (Refactor)
@@ -480,7 +452,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Necessary Features)
 
-        - Add tutorial button in homepage (Keep 4 buttons as newGame is leaving
+        - Setup Tutorial
 
         - Add support for choose multiple
             - PLAYER
@@ -516,7 +488,6 @@ public class mainGame extends AppCompatActivity {
             chooseCardBtn.setText(R.string.choose_card_czar);
 
             // Split decks
-            wonCards = new HashMap<>();
             ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
 
             // Send decks to all participants
@@ -761,7 +732,10 @@ public class mainGame extends AppCompatActivity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 Log.e(TAG, String.valueOf(e));
-            }
+            } catch (java.lang.NullPointerException e) {}
+        }
+        if (message.equals("leave")) {
+            mRealTimeMultiplayerClient = null;
         }
     }
 
@@ -829,13 +803,8 @@ public class mainGame extends AppCompatActivity {
         } else {
             numPlayed++;
             if (numPlayed == numPerDeck) {
-                sendMsg("leave");
-                mRealTimeMultiplayerClient.leave(mRoomConfig, "Game over");
-                finish();
-                Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
-                HashMap<String, ArrayList<String>> namedWonCards = replaceIds();
-                showScores.putExtra("scores", namedWonCards);
-                startActivity(showScores);
+                gameOver = true;
+                leaveRoomPrep(mRoom);
             }
         }
     }
