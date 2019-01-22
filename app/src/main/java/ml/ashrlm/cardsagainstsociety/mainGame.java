@@ -448,7 +448,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO (Bugs to fix):
         - Bug in card splitting thingy
-        - In deck selection alert dialog, only dismiss if decks are selected || disable start game until one of each is selected
+        - In deck selection alert dialog, disable start game until one of each is selected
         - Fix edit deck
      */
 

@@ -43,13 +43,9 @@ public class editDeck extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society - Editing " + deckPath.substring(0, deckPath.length() - 4));
         setSupportActionBar(myToolbar);
-        //Update height of new_deck
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
-        new_deck.setLayoutParams (new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.WRAP_CONTENT, (int) (height * .92)));
         //Read data to add to new_deck
 
+        //TODO: Update reader
         FileInputStream fis;
         try {
             fis = new FileInputStream(getFilesDir().getPath() + '/' + deckType + '/' + deckPath);
@@ -65,6 +61,7 @@ public class editDeck extends AppCompatActivity {
             new_deck.setText(fileContent);
         } catch (IOException e) {
             e.printStackTrace();
+            Log.e(TAG, String.valueOf(e));
         }
     }
 

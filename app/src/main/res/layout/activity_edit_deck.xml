@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,37 +13,38 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
-        app:popupTheme="@style/ThemeOverlay.AppCompat"/>
+        app:popupTheme="@style/ThemeOverlay.AppCompat" />
 
     <android.support.v7.widget.AppCompatEditText
         android:id="@+id/deck_title"
-        style="@style/AppTheme"
-        android:layout_width="378dp"
-        android:layout_height="586dp"
-        android:layout_marginTop="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginTop="70dp"
+        android:layout_marginBottom="135dp"
         android:background="@null"
         android:gravity="top|start"
         android:inputType="textMultiLine"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:scrollbars="vertical"
         android:scrollHorizontally="true"
-        android:textCursorDrawable="@null"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.515"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:singleLine="false"
+        android:textCursorDrawable="@null" />
 
-    <android.support.v7.widget.AppCompatButton
-        android:id="@+id/update_deck"
-        android:layout_width="373dp"
-        android:layout_height="53dp"
+    <Button
+        android:id="@+id/tryPlayButton"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="0dp"
+        android:layout_marginBottom="15dp"
         android:background="@drawable/button"
         android:onClick="updateDeck"
-        android:text="Update cards"
-        android:textSize="20dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/deck_title" />
+        android:text="UPDATE DECK"
+        android:textSize="20sp" />
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>
