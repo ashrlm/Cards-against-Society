@@ -43,6 +43,7 @@ import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.common.collect.Lists;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -60,6 +61,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class mainGame extends AppCompatActivity {
 
@@ -448,7 +450,7 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix):
-        - Bug in card splitting thingy
+        - None (For now) :)
      */
 
     /* TODO: (Refactor)
@@ -459,20 +461,7 @@ public class mainGame extends AppCompatActivity {
     /* TODO: (Necessary Features)
 
         - Setup Tutorial
-            - Play game
-            - Use shared prefs to disable buttons, add toasts throughout, etc.
-            - ROUGH OUTLINE
-                - Home
-                - Disable each button
-                - Enable one, highlight, toast with info, disable
-                - Add <- button on left of title in status bar to cancel
-                - Disable everything but the play button
-                - Play a game
-                - Enable edit decks button
-                - Toast make one
-                - Toast delete one
-                - Return home
-                - Tutorial over
+            - Run as usual, store each toast pos in sharedprefs, if not there, give toast and update sp
      */
 
     /* TODO: (Optional features)
@@ -499,12 +488,12 @@ public class mainGame extends AppCompatActivity {
             chooseCardBtn.setText(R.string.choose_card_czar);
 
             // Split decks
-            ArrayList<ArrayList<String>> whiteCardsSplit = splitDeck(whiteCards);
+            List<List<String>> whiteCardsSplit = splitDeck(whiteCards, mParticipants.size()-1);
 
             // Send decks to all participants
             for (int i = 0; i < mParticipants.size(); i++) {
                 if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { continue; }
-                ArrayList<String> targetDeck;
+                List<String> targetDeck;
                 try {
                     targetDeck = whiteCardsSplit.get(i);
                 } catch (IndexOutOfBoundsException e) {
@@ -527,22 +516,11 @@ public class mainGame extends AppCompatActivity {
         }
     }
 
-    private ArrayList<ArrayList<String>> splitDeck(ArrayList<String> deck) {
-        ArrayList<ArrayList<String>> cardsSplit = new ArrayList<>();
-        numPerDeck = Math.min(10, (int) Math.floor(deck.size() / mParticipants.size() - 1));
-        for (int i = 0; i < mParticipants.size() - 1; i++) {
-            ArrayList<String> cardsTmp = new ArrayList<>();
-            for (int j = 0; j < numPerDeck; j++) {
-                String newCard = deck.get(new Random().nextInt(deck.size()));
-                cardsTmp.add(newCard);
-                deck.remove(newCard);
-            }
-            cardsSplit.add(cardsTmp);
-        }
-
-        for (ArrayList<String> splitDeck : cardsSplit) {
-            Log.d(TAG, "Split deck size: " + String.valueOf(splitDeck.size()));
-        }
+    private List<List<String>> splitDeck(ArrayList<String> deck, int numDecks) {
+        numPerDeck = Math.min(10, (int) Math.floor(deck.size() / numDecks));
+        Collections.shuffle(deck);
+        List<List<String>> cardsSplit = Lists.partition(deck, numPerDeck).subList(0, numDecks);
+        Log.d(TAG, "cardsSplit: " + cardsSplit);
         return cardsSplit;
     }
 
