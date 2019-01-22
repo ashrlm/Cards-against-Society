@@ -450,7 +450,6 @@ public class mainGame extends AppCompatActivity {
         - Bug in card splitting thingy
         - In deck selection alert dialog, only dismiss if decks are selected || disable start game until one of each is selected
         - Fix edit deck
-        - Fix enabling of button
      */
 
     /* TODO: (Refactor)
@@ -678,6 +677,7 @@ public class mainGame extends AppCompatActivity {
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
 
         if (cardTarget.getBackground() == getDrawable(R.drawable.selected_white)) { return; } // Do nothing if one that's already selected is picked
+        if (targetCards.contains(cardTarget)) { return; }
 
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
             if (isCzar) {
@@ -702,7 +702,8 @@ public class mainGame extends AppCompatActivity {
         targetCards.add(cardTarget);
 
         if (!isCzar) { cardTarget.setTag((int) cardTarget.getTag() + 1 % numTargetCards + 1); }
-        if (!isCzar || numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
+        if (!isCzar && targetCards.size() == 2) { chooseCardBtn.setEnabled(true); }
+        if (isCzar && numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
 
     public void chooseCard(View view) {
@@ -884,7 +885,7 @@ public class mainGame extends AppCompatActivity {
             playedWhiteCardBtn.setLayoutParams(ll);
             playedWhiteCardBtn.setSingleLine(false);
             playedWhiteCardBtn.setTextColor(Color.DKGRAY);
-            playedWhiteCardBtn.setTextSize(5 * scale + .5f);
+            playedWhiteCardBtn.setTextSize(4 * scale + .5f);
             whitesPlayed.addView(playedWhiteCardBtn);
         }
     }
@@ -923,7 +924,7 @@ public class mainGame extends AppCompatActivity {
         whiteCardBtn.setLayoutParams(ll);
         whiteCardBtn.setSingleLine(false);
         whiteCardBtn.setTextColor(Color.DKGRAY);
-        whiteCardBtn.setTextSize(3 * scale + .5f);
+        whiteCardBtn.setTextSize(5 * scale + .5f);
         whiteCardBtn.setTag(0); // Determines playable
         whiteCardsLayout.addView(whiteCardBtn);
     }
