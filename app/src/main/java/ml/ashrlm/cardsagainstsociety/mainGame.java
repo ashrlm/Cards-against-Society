@@ -423,7 +423,7 @@ public class mainGame extends AppCompatActivity {
         if (mPlaying) {
             // Tell others players what to do after we leave
             mPlaying = false;
-            if (isCzar || room.getParticipants().size() <= 3 || gameOver) {
+            if (isCzar || room.getParticipants().size() <= 3 || gameOver || blackCards.size() == 0) {
                 sendMsg("leave");
                 finish();
                 Intent showScores = new Intent(getApplicationContext(), scoreSheet.class);
@@ -449,8 +449,8 @@ public class mainGame extends AppCompatActivity {
     /* TODO (Bugs to fix):
         - Bug in card splitting thingy
         - In deck selection alert dialog, only dismiss if decks are selected || disable start game until one of each is selected
-        - Cancel game if anyone (including czar but for black) runs out of cards
         - Fix edit deck
+        - Fix enabling of button
      */
 
     /* TODO: (Refactor)
@@ -462,21 +462,18 @@ public class mainGame extends AppCompatActivity {
         - Setup Tutorial
             - Play game
             - Use shared prefs to disable buttons, add toasts throughout, etc.
-
-        - Add support for choose multiple (DOING NOW
-            - PLAYER
-                - Highlight multiple
-                    - TAGS
-                        - 0 for unselected
-                        - Iterate up to number shown on card
-                            - When clicked, loop, if tag not 0, set to (tag+1%cards_to_highlight+1)
-                            - Add 1 to tag of clicked card
-
-                    - Send cards as arraylist<String> (DO ALWAYS!!)
-            - CZAR
-                - Receive as arraylist<String>
-                - Add "\n..\n" between items
-                - Stick all text onto one card
+            - ROUGH OUTLINE
+                - Home
+                - Disable each button
+                - Enable one, highlight, toast with info, disable
+                - Add <- button on left of title in status bar to cancel
+                - Disable everything but the play button
+                - Play a game
+                - Enable edit decks button
+                - Toast make one
+                - Toast delete one
+                - Return home
+                - Tutorial over
      */
 
     /* TODO: (Optional features)
@@ -711,9 +708,6 @@ public class mainGame extends AppCompatActivity {
     public void chooseCard(View view) {
         findViewById(R.id.sendCardButton).setEnabled(false);
         if (isCzar) {
-            String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
-            updateBlack(newBlack);
-            sendMsg("newblack " + newBlack);
 
             String winningCardText = targetCards.get(0).getText().toString();
             String winnerId = targetCards.get(0).getTag().toString();
@@ -726,6 +720,14 @@ public class mainGame extends AppCompatActivity {
 
             // Update numReceived to ensure all played before czar makes selection
             numReceived = 0;
+
+            try {
+                String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+                updateBlack(newBlack);
+                sendMsg("newblack " + newBlack);
+            } catch (IllegalArgumentException e) {
+                leaveRoomPrep(mRoom);
+            }
         } else {
             // Disable all cards
             LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
@@ -758,7 +760,7 @@ public class mainGame extends AppCompatActivity {
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
                 Log.e(TAG, String.valueOf(e));
-            } catch (java.lang.NullPointerException e) {}
+            } catch (NullPointerException e) {}
         }
         if (message.equals("leave")) {
             mRealTimeMultiplayerClient = null;
