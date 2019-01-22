@@ -459,18 +459,25 @@ public class mainGame extends AppCompatActivity {
      */
 
     /* TODO: (Necessary Features)
-
-        - Setup Tutorial
-            - Run as usual, store each toast pos in sharedprefs, if not there, give toast and update sp
      */
 
     /* TODO: (Optional features)
-        - In scores on side, when a card has to be wrapped, it loses indentation. Fix this. (Find better solution than adding spaces at start) LOW
+        - In scores on side, when a card has to be wrapped, it loses indentation. Fix this. (Find better solution than adding spaces at start)
 
         - Add voice chat LOW
             - Icons for mute/silence in status bar
 
-        - Custom waiting room UI MID
+        - Custom waiting room UI
+
+        - Sync decks with website
+
+        - Rework homepage
+            - Make settings page
+                - Credits
+                - Tutorial mode ON/OFF (ADD TUTORIAL TOASTS)
+            - Make play game button have QUICK GAME / INVITE PLAYERS buttons
+            - Add invite players option
+
 
      */
 
