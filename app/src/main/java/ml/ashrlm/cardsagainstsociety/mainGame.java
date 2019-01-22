@@ -20,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +54,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -68,9 +69,9 @@ public class mainGame extends AppCompatActivity {
     private int numPerDeck;
     private static long role;
     private String mPlayerId;
-    private Button targetCard;
     private int numPlayed = 0;
     private int numReceived = 0;
+    private int numTargetCards = 1;
     private Button chooseCardBtn;
     private String mParticipantId;
     private RoomConfig mRoomConfig;
@@ -84,9 +85,10 @@ public class mainGame extends AppCompatActivity {
     private GoogleSignInAccount mSignedInAccount;
     private boolean returnedFromWaitingUi = false; // Used until custom waiting room UI
     private static final int RC_WAITING_ROOM = 9007;
-    private HashMap<String, String> idNames = new HashMap<>();
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
+    private ArrayList<Button> targetCards = new ArrayList<>();
+    private HashMap<String, String> idNames = new HashMap<>();
     private ArrayList<BigInteger> czarNums = new ArrayList<>();
     private RealTimeMultiplayerClient mRealTimeMultiplayerClient;
     private HashMap<String, ArrayList<String>> wonCards = new HashMap<>(); // Used for scoresheet
@@ -445,8 +447,10 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix):
-        - Sometimes exact same white decks, just shuffled
+        - Bug in card splitting thingy
         - In deck selection alert dialog, only dismiss if decks are selected || disable start game until one of each is selected
+        - Cancel game if anyone (including czar but for black) runs out of cards
+        - Fix edit deck
      */
 
     /* TODO: (Refactor)
@@ -456,14 +460,23 @@ public class mainGame extends AppCompatActivity {
     /* TODO: (Necessary Features)
 
         - Setup Tutorial
+            - Play game
+            - Use shared prefs to disable buttons, add toasts throughout, etc.
 
-        - Add support for choose multiple
+        - Add support for choose multiple (DOING NOW
             - PLAYER
                 - Highlight multiple
+                    - TAGS
+                        - 0 for unselected
+                        - Iterate up to number shown on card
+                            - When clicked, loop, if tag not 0, set to (tag+1%cards_to_highlight+1)
+                            - Add 1 to tag of clicked card
+
+                    - Send cards as arraylist<String> (DO ALWAYS!!)
             - CZAR
-                - show in stack that expands horizontally and replaces all other cards
-                - Disable select_winner when not in stack
-                - Return button first in stack
+                - Receive as arraylist<String>
+                - Add "\n..\n" between items
+                - Stick all text onto one card
      */
 
     /* TODO: (Optional features)
@@ -471,7 +484,6 @@ public class mainGame extends AppCompatActivity {
 
         - Add voice chat LOW
             - Icons for mute/silence in status bar
-
 
         - Custom waiting room UI MID
 
@@ -482,7 +494,7 @@ public class mainGame extends AppCompatActivity {
         Log.d(TAG, "runGame();");
 
         chooseCardBtn = findViewById(R.id.sendCardButton);
-       
+
         sendMsg("name" + mName); // Share name
 
         if (isCzar) {
@@ -661,22 +673,38 @@ public class mainGame extends AppCompatActivity {
         }
         return decks;
     }
-    
+
     // Highlight cards
 
     private void highlightCard(View view) {
-        Button targetWhite = (Button) view;
+        Button cardTarget = (Button) view;
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
+
+        if (cardTarget.getBackground() == getDrawable(R.drawable.selected_white)) { return; } // Do nothing if one that's already selected is picked
+
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
-            buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
-            if (!isCzar) {
-                buttonsLayout.getChildAt(i).setTag(true);
+            if (isCzar) {
+                buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+            } else {
+                if ((int) buttonsLayout.getChildAt(i).getTag() != 0) {
+                    buttonsLayout.getChildAt(i).setTag((((int) buttonsLayout.getChildAt(i).getTag() + 1) % numTargetCards + 1) - 1);
+                }
+                if ((int) buttonsLayout.getChildAt(i).getTag() == 0) {
+                    buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+                    if (targetCards.contains(buttonsLayout.getChildAt(i))) {
+                        Log.d(TAG, "card removed: " + buttonsLayout.getChildAt(i));
+                        targetCards.remove(buttonsLayout.getChildAt(i));
+                    }
+                } else {
+                    buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.selected_white);
+                }
             }
         }
-        targetWhite.setBackgroundResource(R.drawable.selected_white); // Set card to selected
-        targetCard = targetWhite;
 
-        if (!isCzar) { targetWhite.setTag(false); }
+        cardTarget.setBackgroundResource(R.drawable.selected_white); // Set card to selected
+        targetCards.add(cardTarget);
+
+        if (!isCzar) { cardTarget.setTag((int) cardTarget.getTag() + 1 % numTargetCards + 1); }
         if (!isCzar || numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
 
@@ -687,10 +715,10 @@ public class mainGame extends AppCompatActivity {
             updateBlack(newBlack);
             sendMsg("newblack " + newBlack);
 
-            String winningCardText = targetCard.getText().toString();
-            String winnerId = targetCard.getTag().toString();
+            String winningCardText = targetCards.get(0).getText().toString();
+            String winnerId = targetCards.get(0).getTag().toString();
 
-            sendMsg("win " + targetCard.getText().toString() + " winnerId " + winnerId);
+            sendMsg("win " + targetCards.get(0).getText().toString() + " winnerId " + winnerId);
             updateWins(winningCardText, winnerId);
 
             // Clear all cards from bottom of screen
@@ -704,9 +732,14 @@ public class mainGame extends AppCompatActivity {
             for (int i = 0; i < whitesScrolledLayout.getChildCount(); i++) {
                 whitesScrolledLayout.getChildAt(i).setEnabled(false);
             }
-            whitesScrolledLayout.removeView(targetCard);
+            StringBuilder whiteCardText = new StringBuilder();
+            Log.d(TAG, String.valueOf(targetCards));
+            for (int i = 0; i < targetCards.size(); i++) {
+                whitesScrolledLayout.removeView(targetCards.get(i));
+                whiteCardText.append(targetCards.get(i).getText());
+                if (i < targetCards.size()-1) { whiteCardText.append("\n●\n"); }
+            }
             // Share white card with czar
-            String whiteCardText = targetCard.getText().toString();
             sendTargetedMsg("cw" + whiteCardText, czarId);
         }
     }
@@ -750,6 +783,12 @@ public class mainGame extends AppCompatActivity {
     private void updateBlack(String newblack) {
         TextView blackPrompt = findViewById(R.id.blackCardMain);
         blackPrompt.setText(newblack);
+        if (newblack.toLowerCase().contains("[choose")) {
+            int targetCardsNumPos = newblack.toLowerCase().indexOf("[choose")+8;
+            int targetCardsEndNumPos = newblack.toLowerCase().lastIndexOf("]");
+            Log.d(TAG, newblack.substring(targetCardsNumPos));
+            numTargetCards = Integer.valueOf(newblack.substring(targetCardsNumPos, targetCardsEndNumPos));
+        }
     }
 
     private void updateWins(String wonCard, String winnerId) {
@@ -788,7 +827,7 @@ public class mainGame extends AppCompatActivity {
         if (!isCzar) {
             LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
             for (int i = 0; i < whiteCardsLayout.getChildCount(); i++) {
-                if (!(Boolean) whiteCardsLayout.getChildAt(i).getTag()) {
+                if (((int) whiteCardsLayout.getChildAt(i).getTag()) != 0) {
                     whiteCardsLayout.removeView(whiteCardsLayout.getChildAt(i));
                     break;
                 }
@@ -882,8 +921,8 @@ public class mainGame extends AppCompatActivity {
         whiteCardBtn.setLayoutParams(ll);
         whiteCardBtn.setSingleLine(false);
         whiteCardBtn.setTextColor(Color.DKGRAY);
-        whiteCardBtn.setTextSize(5 * scale + .5f);
-        whiteCardBtn.setTag(true); // Determines playable
+        whiteCardBtn.setTextSize(3 * scale + .5f);
+        whiteCardBtn.setTag(0); // Determines playable
         whiteCardsLayout.addView(whiteCardBtn);
     }
 
