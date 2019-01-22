@@ -449,8 +449,6 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO (Bugs to fix):
         - Bug in card splitting thingy
-        - In deck selection alert dialog, disable start game until one of each is selected (DOING NOW)
-        - Fix play button enabling for when the number of cards is 1
      */
 
     /* TODO: (Refactor)
@@ -735,7 +733,7 @@ public class mainGame extends AppCompatActivity {
         targetCards.add(cardTarget);
 
         if (!isCzar) { cardTarget.setTag((int) cardTarget.getTag() + 1 % numTargetCards + 1); }
-        if (!isCzar && targetCards.size() == 2) { chooseCardBtn.setEnabled(true); }
+        if (!isCzar && targetCards.size() == numTargetCards) { chooseCardBtn.setEnabled(true); }
         if (isCzar && numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
 
