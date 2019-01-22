@@ -1,5 +1,6 @@
 package ml.ashrlm.cardsagainstsociety;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -448,12 +449,13 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO (Bugs to fix):
         - Bug in card splitting thingy
-        - In deck selection alert dialog, disable start game until one of each is selected
-        - Fix edit deck
+        - In deck selection alert dialog, disable start game until one of each is selected (DOING NOW)
+        - Fix play button enabling for when the number of cards is 1
      */
 
     /* TODO: (Refactor)
        - Convert EVERYTHING IN APP (User facing) to @string
+       - Fix checkbox generation (Split into func with deck color, target as params)
      */
 
     /* TODO: (Necessary Features)
@@ -559,12 +561,32 @@ public class mainGame extends AppCompatActivity {
         String deckColor = "white";
         ArrayList<String> whiteDecks = getDecks(deckColor);
         for (String deck : whiteDecks) {
-            CheckBox whiteBox = new CheckBox(this);
+            final CheckBox whiteBox = new CheckBox(this);
             whiteBox.setText(deck);
             whiteBox.setTag(deckColor);
             whiteBox.setTextSize(18);
             CompoundButtonCompat.setButtonTintList(whiteBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
             checkboxes.add(whiteBox);
+            whiteBox.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            boolean whiteChecked = false;
+                            boolean blackChecked = false;
+                            for (CheckBox targetBox : checkboxes) {
+                                if (targetBox.isChecked()) {
+                                    if (targetBox.getTag().equals("white")) { whiteChecked = true; }
+                                    if (targetBox.getTag().equals("black")) { blackChecked = true; }
+                                }
+                            }
+                            if (whiteChecked && blackChecked) {
+                                deckSelection.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                            } else {
+                                deckSelection.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                            }
+                        }
+                    }
+            );
             cardsLayout.addView(whiteBox);
         } // Black boxes
         deckColor = "black";
@@ -577,6 +599,26 @@ public class mainGame extends AppCompatActivity {
             blackBox.setTag(deckColor);
             blackBox.setTextSize(18);
             CompoundButtonCompat.setButtonTintList(blackBox, ColorStateList.valueOf(Color.parseColor("#CCCCCC")));
+            blackBox.setOnClickListener(
+                    new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            boolean whiteChecked = false;
+                            boolean blackChecked = false;
+                            for (CheckBox targetBox : checkboxes) {
+                                if (targetBox.isChecked()) {
+                                    if (targetBox.getTag().equals("white")) { whiteChecked = true; }
+                                    if (targetBox.getTag().equals("black")) { blackChecked = true; }
+                                }
+                            }
+                            if (whiteChecked && blackChecked) {
+                                deckSelection.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
+                            } else {
+                                deckSelection.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
+                            }
+                        }
+                    }
+            );
             checkboxes.add(blackBox);
             cardsLayout.addView(blackBox);
         }
@@ -589,14 +631,11 @@ public class mainGame extends AppCompatActivity {
         decksBuilder.setPositiveButton(R.string.start_game, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // Card selection validation & loading
-                boolean whiteSelected = false;
-                boolean blackSelected = false;
+                // Card selection loading
                 for (CheckBox deck : checkboxes) {
                     try {
                         Log.d(TAG, "deckMd: " + deck.getTag().toString() +  deck.isChecked());
                         if (deck.getTag().equals("white") && deck.isChecked()) {
-                            whiteSelected = true;
                             File whiteDeck = new File(getFilesDir().getAbsolutePath() + "/white/" + deck.getText().toString());
                             if (whiteDeck.exists()) {
                                 BufferedReader br = new BufferedReader(new FileReader(whiteDeck));
@@ -616,7 +655,6 @@ public class mainGame extends AppCompatActivity {
                                 }
                             }
                         } else if (deck.getTag().equals("black") && deck.isChecked()) {
-                            blackSelected = true;
                             File blackDeck = new File(getFilesDir().getAbsolutePath() + "/black/" + deck.getText().toString());
                             if (blackDeck.exists()) {
                                 BufferedReader br = new BufferedReader(new FileReader(blackDeck));
@@ -641,18 +679,13 @@ public class mainGame extends AppCompatActivity {
                     }
                 }
 
-                Log.d(TAG, "whiteSelected: " + whiteSelected);
-                Log.d(TAG, "blackSelected: " + blackSelected);
-                if ((whiteSelected && blackSelected)) {
-                    runGame();
-                } else {
-                    deckSelection.show();
-                }
+                runGame();
 
             }
         });
         deckSelection = decksBuilder.create();
         deckSelection.show();
+        deckSelection.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
     }
 
     private ArrayList<String> getDecks (String deckColor) {
