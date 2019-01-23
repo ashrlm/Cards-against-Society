@@ -16,7 +16,6 @@ import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -732,7 +731,7 @@ public class mainGame extends AppCompatActivity {
         }
 
         if (!isCzar) { cardTarget.setTag((int) cardTarget.getTag() + 1 % numTargetCards + 1); }
-        Log.d(TAG, targetCards.size()+" "+numTargetCards);
+        //Log.d(TAG, targetCards.size()+" "+numTargetCards);
         if (!isCzar && targetCards.size() == numTargetCards) { chooseCardBtn.setEnabled(true); }
         if (isCzar && numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
