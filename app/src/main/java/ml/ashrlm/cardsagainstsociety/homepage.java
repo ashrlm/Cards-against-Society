@@ -71,7 +71,7 @@ public class homepage extends AppCompatActivity {
     }
 
     private void startSignInIntent() {
-        Log.d(TAG, "startSignInIntent()");
+       // Log.d(TAG, "startSignInIntent()");
         startActivityForResult(mGoogleSignInClient.getSignInIntent(), RC_SIGN_IN);
     }
 
@@ -87,18 +87,18 @@ public class homepage extends AppCompatActivity {
 
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                Log.d(TAG, "Signed in as: " + account.getDisplayName());
+               // Log.d(TAG, "Signed in as: " + account.getDisplayName());
             } catch (ApiException apiException) {
                 String message = apiException.getMessage();
                 if (message == null || message.isEmpty()) {
-                    Log.e(TAG, "Sign-in Error");
+                   // Log.e(TAG, "Sign-in Error");
                 }
             }
         }
     }
 
     private void logout () {
-        Log.d(TAG, "signOut()");
+       // Log.d(TAG, "signOut()");
 
         mGoogleSignInClient.signOut().addOnCompleteListener(this,
                 new OnCompleteListener<Void>() {
@@ -106,10 +106,10 @@ public class homepage extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
 
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "signOut(): success");
+                           // Log.d(TAG, "signOut(): success");
                             onResume();
                         } else {
-                            Log.d(TAG, "signOut(): failed");
+                           // Log.d(TAG, "signOut(): failed");
                         }
                     }
                 });
@@ -118,7 +118,7 @@ public class homepage extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
-        Log.d(TAG, "onResume()");
+       // Log.d(TAG, "onResume()");
         if (GoogleSignIn.getLastSignedInAccount(homepage.this) == null) {
             startSignInIntent();
         }

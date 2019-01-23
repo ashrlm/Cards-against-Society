@@ -1,12 +1,13 @@
 package ml.ashrlm.cardsagainstsociety;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -56,12 +57,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class mainGame extends AppCompatActivity {
 
@@ -112,7 +110,7 @@ public class mainGame extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "onBackPressed");
+       // Log.d(TAG, "onBackPressed");
         if (mPlaying) {
             AlertDialog.Builder builder1 = new AlertDialog.Builder(this);
             builder1.setMessage("If you exit this game, you will not be able to rejoin.");
@@ -158,8 +156,8 @@ public class mainGame extends AppCompatActivity {
                         public void onSuccess(Player player) {
                             mName = player.getDisplayName();
                             mPlayerId = player.getPlayerId();
-                            Log.d(TAG, "mPlayerId: " + mPlayerId);
-                            Log.d(TAG, "name: " + mName);
+                           // Log.d(TAG, "mPlayerId: " + mPlayerId);
+                           // Log.d(TAG, "name: " + mName);
                         }
                     });
         }
@@ -167,12 +165,12 @@ public class mainGame extends AppCompatActivity {
     }
 
     void startQuickGame() {
-        Log.d(TAG, "Started quick-game");
+       // Log.d(TAG, "Started quick-game");
         int MIN_PLAYERS = 2;
         int MAX_PLAYERS = 7;
         Bundle autoMatchCriteria = RoomConfig.createAutoMatchCriteria(MIN_PLAYERS,
                 MAX_PLAYERS, role);
-        Log.d(TAG, String.valueOf(autoMatchCriteria));
+       // Log.d(TAG, String.valueOf(autoMatchCriteria));
 
         mRoomConfig = RoomConfig.builder(mRoomUpdateCallback)
                 .setOnMessageReceivedListener(mOnRealTimeMessageReceivedListener)
@@ -197,11 +195,11 @@ public class mainGame extends AppCompatActivity {
                         setupGame();
                         if (mCzarSubmission.equals(Collections.max(czarNums))) {
                             isCzar = true;
-                            Log.d(TAG, "Czar");
+                           // Log.d(TAG, "Czar");
                             // Request cards
                             requestCards();
                         } else {
-                            Log.d(TAG, "Not czar");
+                           // Log.d(TAG, "Not czar");
                             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_LONG).show();
                             runGame();
                         }
@@ -209,25 +207,25 @@ public class mainGame extends AppCompatActivity {
                     }
 
                 } else if (message.startsWith("name")) {
-                    Log.d(TAG, "New Name: " + message.substring(4));
+                   // Log.d(TAG, "New Name: " + message.substring(4));
                     idNames.put(senderId, message.substring(4));
-                    Log.d(TAG, "name hashmap: " + idNames);
+                   // Log.d(TAG, "name hashmap: " + idNames);
 
                 } else if (message.equals("leave")) {
-                    Log.d(TAG, "leaveMsgReceived");
+                   // Log.d(TAG, "leaveMsgReceived");
                     // Game over
                     leaveRoomPrep(mRoom);
 
                 } else if (message.startsWith("newblack")) {
-                    Log.d(TAG, "newblack: " + message.substring(9));
+                   // Log.d(TAG, "newblack: " + message.substring(9));
                     // Message in format of "newblack [NEW BLACK CARD]"
                     updateBlack(message.substring(9));
 
                 } else if (message.startsWith("win")) {
-                    Log.d(TAG, "win: " + message.substring(4));
+                   // Log.d(TAG, "win: " + message.substring(4));
                     // Message in format of win [text on card] winnerId [winnerId]
                     String winnerId = message.substring(message.lastIndexOf("winnerId") + 9);
-                    Log.d(TAG, "winnnerId:" + winnerId);
+                   // Log.d(TAG, "winnnerId:" + winnerId);
                     updateWins(message.substring(4, message.lastIndexOf("winnerId") - 1), winnerId);
                     // Re-enable all bottom cards
                     LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
@@ -236,7 +234,7 @@ public class mainGame extends AppCompatActivity {
                     }
 
                 } else if (message.startsWith("cw")) {
-                    Log.d(TAG, "whiteReceived: " + message);
+                   // Log.d(TAG, "whiteReceived: " + message);
                     // White card sent to czar by player
                     updateCzarWhite(message.substring(2), senderId);
                     numReceived++;
@@ -246,7 +244,7 @@ public class mainGame extends AppCompatActivity {
                     }
 
                 } else if (message.charAt(0) == 'w') {
-                    Log.d(TAG, "whiteFromCzar: " + message.substring(1));
+                   // Log.d(TAG, "whiteFromCzar: " + message.substring(1));
                     czarId = senderId;
                     updatePlayerWhite(message.substring(1));
                 }
@@ -260,34 +258,34 @@ public class mainGame extends AppCompatActivity {
     private RoomUpdateCallback mRoomUpdateCallback = new RoomUpdateCallback() {
         @Override
         public void onRoomCreated(int statusCode, @Nullable Room room) {
-            Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
+           // Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
             if (statusCode != GamesCallbackStatusCodes.OK) {
-                Log.d(TAG, "leaving");
+               // Log.d(TAG, "leaving");
                 finish();
                 return;
             }
             mRoomId = room.getRoomId();
             mRoom = room;
             showWaitingRoom(room);
-            Log.d(TAG, "ROOM: " + room);
+           // Log.d(TAG, "ROOM: " + room);
         }
 
         @Override
         public void onJoinedRoom(int statusCode, @Nullable Room room) {
-            Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
+           // Log.d(TAG, "onJoinedRoom(" + statusCode + ", " + room + ")");
             mRoom = room;
             showWaitingRoom(room);
         }
 
         @Override
         public void onLeftRoom(int statusCode, @NonNull String s) {
-            Log.d(TAG, "onLeftRoom(" + statusCode + ", " + s + ")");
+           // Log.d(TAG, "onLeftRoom(" + statusCode + ", " + s + ")");
             finish();
         }
 
         @Override
         public void onRoomConnected(int statusCode, @Nullable Room room) {
-            Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
+           // Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
             mParticipantId = mRoom.getParticipantId(mPlayerId);
             mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
@@ -309,7 +307,7 @@ public class mainGame extends AppCompatActivity {
                     @Override
                     public void onSuccess(Intent intent) {
                         // show waiting room UI
-                        Log.d(TAG, "Waiting room UI shown");
+                       // Log.d(TAG, "Waiting room UI shown");
                         returnedFromWaitingUi = true;
                         startActivityForResult(intent, RC_WAITING_ROOM);
                         /*NOTE: In time, this will be updated to use a custom UI that better fits
@@ -338,7 +336,7 @@ public class mainGame extends AppCompatActivity {
         // Called when we get disconnected from the room. We return to the main screen.
         @Override
         public void onDisconnectedFromRoom(Room room) {
-            Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
+           // Log.d(TAG, "onDisconnectedFromRoom(" + room + ")");
             if (mPlaying) {
                 mRoomId = null;
                 mRoomConfig = null;
@@ -404,7 +402,7 @@ public class mainGame extends AppCompatActivity {
     };
 
     private void signInSilently() {
-        Log.d(TAG, "Silent sign-in attempted");
+       // Log.d(TAG, "Silent sign-in attempted");
         GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
                 GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         signInClient.silentSignIn().addOnCompleteListener(this,
@@ -414,9 +412,9 @@ public class mainGame extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // The signed in account is stored in the task's result.
                             onConnected(task.getResult());
-                            Log.d(TAG, "Silent sign-in succeeded");
+                           // Log.d(TAG, "Silent sign-in succeeded");
                         } else {
-                            Log.e(TAG, "Silent sign-in failed");
+                           // Log.e(TAG, "Silent sign-in failed");
                         }
                     }
                 });
@@ -435,14 +433,14 @@ public class mainGame extends AppCompatActivity {
                 startActivity(showScores);
             }
         }
-        Log.e(TAG, "roomLeft");
+       // Log.e(TAG, "roomLeft");
         if (mRoom != null && mRealTimeMultiplayerClient != null && mRoomConfig != null) { mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId); }
     }
 
     protected void onResume() {
         super.onResume();
         if (returnedFromWaitingUi && !mPlaying) {
-            Log.d(TAG, "returnedFromWaitingUI");
+           // Log.d(TAG, "returnedFromWaitingUI");
             finish();
         }
     }
@@ -450,7 +448,8 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO (Bugs to fix):
-        - None (For now) :)
+        - Sometimes people leaving immediately in a weird way
+        - Bug with [PICK 3]
      */
 
     /* TODO: (Refactor)
@@ -483,13 +482,15 @@ public class mainGame extends AppCompatActivity {
 
     private void runGame() {
 
-        Log.d(TAG, "runGame();");
+       // Log.d(TAG, "runGame();");
 
         chooseCardBtn = findViewById(R.id.sendCardButton);
 
         sendMsg("name" + mName); // Share name
 
         if (isCzar) {
+
+            //BUG: Cards sent to everyone depending on czars place in line
 
             chooseCardBtn.setEnabled(false);
             chooseCardBtn.setText(R.string.choose_card_czar);
@@ -498,21 +499,22 @@ public class mainGame extends AppCompatActivity {
             List<List<String>> whiteCardsSplit = splitDeck(whiteCards, mParticipants.size()-1);
 
             // Send decks to all participants
-            for (int i = 0; i < mParticipants.size(); i++) {
-                if (mParticipants.get(i).getParticipantId().equals(mParticipantId)) { continue; }
-                List<String> targetDeck;
-                try {
-                    targetDeck = whiteCardsSplit.get(i);
-                } catch (IndexOutOfBoundsException e) {
-                    targetDeck = whiteCardsSplit.get(i-1);
+            List<Participant> players = new ArrayList<>(mParticipants);
+            for (Participant p : mParticipants) {
+                if (p.getParticipantId().equals(mParticipantId)) {
+                    players.remove(p);
                 }
+            }
+            for (int i = 0; i < players.size(); i++) {
+                List<String> targetDeck;
+                targetDeck = whiteCardsSplit.get(i);
                 for (String card : targetDeck) {
-                    sendTargetedMsg("w" + card, mParticipants.get(i).getParticipantId());
+                    sendTargetedMsg("w" + card, players.get(i).getParticipantId());
                 }
             }
 
             // Send initial black card
-            Log.d(TAG, "numBlacks: " + blackCards.size());
+           // Log.d(TAG, "numBlacks: " + blackCards.size());
             String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
             blackCards.remove(newBlack);
             updateBlack(newBlack);
@@ -527,7 +529,7 @@ public class mainGame extends AppCompatActivity {
         numPerDeck = Math.min(10, (int) Math.floor(deck.size() / numDecks));
         Collections.shuffle(deck);
         List<List<String>> cardsSplit = Lists.partition(deck, numPerDeck).subList(0, numDecks);
-        Log.d(TAG, "cardsSplit: " + cardsSplit);
+       // Log.d(TAG, "cardsSplit: " + cardsSplit);
         return cardsSplit;
     }
 
@@ -617,7 +619,7 @@ public class mainGame extends AppCompatActivity {
                 // Card selection loading
                 for (CheckBox deck : checkboxes) {
                     try {
-                        Log.d(TAG, "deckMd: " + deck.getTag().toString() +  deck.isChecked());
+                       // Log.d(TAG, "deckMd: " + deck.getTag().toString() +  deck.isChecked());
                         if (deck.getTag().equals("white") && deck.isChecked()) {
                             File whiteDeck = new File(getFilesDir().getAbsolutePath() + "/white/" + deck.getText().toString());
                             if (whiteDeck.exists()) {
@@ -658,7 +660,7 @@ public class mainGame extends AppCompatActivity {
                             }
                         }
                     } catch (IOException e) {
-                        Log.e(TAG, "Error loading cards: ", e);
+                       // Log.e(TAG, "Error loading cards: ", e);
                     }
                 }
 
@@ -691,33 +693,46 @@ public class mainGame extends AppCompatActivity {
     private void highlightCard(View view) {
         Button cardTarget = (Button) view;
         LinearLayout buttonsLayout = findViewById(R.id.whitesScrolledLayout);
+        Drawable cardTargetBackground;
 
-        if (cardTarget.getBackground() == getDrawable(R.drawable.selected_white)) { return; } // Do nothing if one that's already selected is picked
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+            cardTargetBackground = getDrawable(R.drawable.selected_white);
+        } else {
+            cardTargetBackground = getResources().getDrawable(R.drawable.selected_white);
+        }
+        if (cardTarget.getBackground() == cardTargetBackground) { return; } // Do nothing if one that's already selected is picked
         if (targetCards.contains(cardTarget)) { return; }
 
         for (int i = 0; i < buttonsLayout.getChildCount(); i++) {
             if (isCzar) {
                 buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
+                targetCards.remove(buttonsLayout.getChildAt(i));
             } else {
-                if ((int) buttonsLayout.getChildAt(i).getTag() != 0) {
+                if ((int) buttonsLayout.getChildAt(i).getTag() != 0 || (buttonsLayout.getChildAt(i) == cardTarget && numTargetCards % 2 != 0)) {
                     buttonsLayout.getChildAt(i).setTag((((int) buttonsLayout.getChildAt(i).getTag() + 1) % numTargetCards + 1) - 1);
+                    //Log.d(TAG, "highlightTag: " + buttonsLayout.getChildAt(i).getTag());
                 }
                 if ((int) buttonsLayout.getChildAt(i).getTag() == 0) {
                     buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.white_card);
-                    if (targetCards.contains(buttonsLayout.getChildAt(i))) {
-                        Log.d(TAG, "card removed: " + buttonsLayout.getChildAt(i));
-                        targetCards.remove(buttonsLayout.getChildAt(i));
-                    }
+                    // Log.d(TAG, "card removed: " + buttonsLayout.getChildAt(i));
+                    targetCards.remove(buttonsLayout.getChildAt(i));
                 } else {
                     buttonsLayout.getChildAt(i).setBackgroundResource(R.drawable.selected_white);
+                    if (!targetCards.contains(buttonsLayout.getChildAt(i))) {
+                        targetCards.add((Button) buttonsLayout.getChildAt(i));
+                    }
                 }
             }
+
         }
 
         cardTarget.setBackgroundResource(R.drawable.selected_white); // Set card to selected
-        targetCards.add(cardTarget);
+        if (!targetCards.contains(cardTarget)) {
+            targetCards.add(cardTarget);
+        }
 
         if (!isCzar) { cardTarget.setTag((int) cardTarget.getTag() + 1 % numTargetCards + 1); }
+        Log.d(TAG, targetCards.size()+" "+numTargetCards);
         if (!isCzar && targetCards.size() == numTargetCards) { chooseCardBtn.setEnabled(true); }
         if (isCzar && numReceived == mParticipants.size()-1) { chooseCardBtn.setEnabled(true); }
     }
@@ -752,7 +767,7 @@ public class mainGame extends AppCompatActivity {
                 whitesScrolledLayout.getChildAt(i).setEnabled(false);
             }
             StringBuilder whiteCardText = new StringBuilder();
-            Log.d(TAG, String.valueOf(targetCards));
+            //Log.d(TAG, String.valueOf(targetCards));
             for (int i = 0; i < targetCards.size(); i++) {
                 whitesScrolledLayout.removeView(targetCards.get(i));
                 whiteCardText.append(targetCards.get(i).getText());
@@ -776,7 +791,7 @@ public class mainGame extends AppCompatActivity {
                 );
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
-                Log.e(TAG, String.valueOf(e));
+               // Log.e(TAG, String.valueOf(e));
             } catch (NullPointerException e) {}
         }
         if (message.equals("leave")) {
@@ -802,16 +817,19 @@ public class mainGame extends AppCompatActivity {
     private void updateBlack(String newblack) {
         TextView blackPrompt = findViewById(R.id.blackCardMain);
         blackPrompt.setText(newblack);
-        if (newblack.toLowerCase().contains("[choose")) {
-            int targetCardsNumPos = newblack.toLowerCase().indexOf("[choose")+8;
+        if (newblack.toLowerCase().contains("[pick")) {
+            int targetCardsNumPos = newblack.toLowerCase().indexOf("[pick")+6;
             int targetCardsEndNumPos = newblack.toLowerCase().lastIndexOf("]");
-            Log.d(TAG, newblack.substring(targetCardsNumPos));
+           // Log.d(TAG, newblack.substring(targetCardsNumPos));
             numTargetCards = Integer.valueOf(newblack.substring(targetCardsNumPos, targetCardsEndNumPos));
+        } else {
+            numTargetCards = 1;
         }
+        targetCards = new ArrayList<>();
     }
 
     private void updateWins(String wonCard, String winnerId) {
-        Log.d(TAG, "wonCard " + wonCard);
+       // Log.d(TAG, "wonCard " + wonCard);
         // Update wins hashmap
         if (idNames.get(winnerId) == null) {
             idNames.put(winnerId, mName);
@@ -824,7 +842,7 @@ public class mainGame extends AppCompatActivity {
             // Add participant to scores
             ArrayList<String> newWinTmp = new ArrayList<>();
             newWinTmp.add(wonCard);
-            Log.d(TAG, "idNames.get(winnerId) " + idNames.get(winnerId));
+           // Log.d(TAG, "idNames.get(winnerId) " + idNames.get(winnerId));
             wonCards.put(winnerId, newWinTmp);
         }
 
@@ -834,7 +852,7 @@ public class mainGame extends AppCompatActivity {
         for (Map.Entry<String, ArrayList<String>> win : wonCards.entrySet()) {
             newWinsMsg += (idNames.get(win.getKey()) + "\n");
             for (String cardWon : win.getValue()) {
-                Log.d(TAG, "cardWon " + cardWon);
+               // Log.d(TAG, "cardWon " + cardWon);
                 newWinsMsg += ("    " + cardWon + "\n");
             }
             newWinsMsg += "\n";
@@ -907,7 +925,7 @@ public class mainGame extends AppCompatActivity {
     }
 
     private void updatePlayerWhite(String message) {
-        Log.d(TAG, String.valueOf(whiteCards));
+       // Log.d(TAG, String.valueOf(whiteCards));
         // Received white card from czar - add to list of available cards
         if (whiteCards == null) { whiteCards = new ArrayList<>(); }
         LinearLayout whiteCardsLayout = findViewById(R.id.whitesScrolledLayout);
@@ -955,7 +973,7 @@ public class mainGame extends AppCompatActivity {
     }
 
     private void setupGame() {
-        Log.d(TAG, "Game started!");
+       // Log.d(TAG, "Game started!");
         setContentView(R.layout.main_game);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society");

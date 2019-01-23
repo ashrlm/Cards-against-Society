@@ -88,7 +88,7 @@ public class scoreSheet extends AppCompatActivity {
     }
 
     private void logout () {
-        Log.d(TAG, "signOut()");
+       // Log.d(TAG, "signOut()");
 
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         mGoogleSignInClient.signOut().addOnCompleteListener(this,
@@ -97,10 +97,10 @@ public class scoreSheet extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
 
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "signOut(): success");
+                           // Log.d(TAG, "signOut(): success");
                             finish();
                         } else {
-                            Log.d(TAG, "signOut(): failed");
+                           // Log.d(TAG, "signOut(): failed");
                         }
                     }
                 });
@@ -124,7 +124,7 @@ public class scoreSheet extends AppCompatActivity {
             sorted.put(entry.getKey(), entry.getValue());
 
         }
-        Log.d(TAG, String.valueOf(sorted));
+       // Log.d(TAG, String.valueOf(sorted));
         return sorted;
     }
 

@@ -61,7 +61,7 @@ public class editDeck extends AppCompatActivity {
             new_deck.setText(fileContent);
         } catch (IOException e) {
             e.printStackTrace();
-            Log.e(TAG, String.valueOf(e));
+           // Log.e(TAG, String.valueOf(e));
         }
     }
 
@@ -88,7 +88,7 @@ public class editDeck extends AppCompatActivity {
     }
 
     private void logout () {
-        Log.d(TAG, "signOut()");
+       // Log.d(TAG, "signOut()");
 
         GoogleSignInClient mGoogleSignInClient = GoogleSignIn.getClient(this, GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         mGoogleSignInClient.signOut().addOnCompleteListener(this,
@@ -97,10 +97,10 @@ public class editDeck extends AppCompatActivity {
                     public void onComplete(@NonNull Task<Void> task) {
 
                         if (task.isSuccessful()) {
-                            Log.d(TAG, "signOut(): success");
+                           // Log.d(TAG, "signOut(): success");
                             finish();
                         } else {
-                            Log.d(TAG, "signOut(): failed");
+                           // Log.d(TAG, "signOut(): failed");
                         }
                     }
                 });
@@ -122,7 +122,7 @@ public class editDeck extends AppCompatActivity {
             outputStream.close();
             finish();
         } catch (Exception e) {
-            Log.e(TAG, "Could not save to file. Error code: " + e + " DECKPATH: " + deckPath);
+           // Log.e(TAG, "Could not save to file. Error code: " + e + " DECKPATH: " + deckPath);
             e.printStackTrace();
         }
     }

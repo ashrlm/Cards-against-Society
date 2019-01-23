@@ -10,10 +10,6 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity
-            android:name=".tutorial"
-            android:label="@string/title_activity_tutorial"
-            android:theme="@style/NoActionBar"></activity>
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
@@ -39,9 +35,6 @@
         <activity
             android:name=".newDeck"
             android:label="@string/title_activity_new_deck" />
-        <activity
-            android:name=".setupNewGame"
-            android:label="@string/title_activity_setup_new_game" />
         <activity
             android:name=".mainGame"
             android:label="@string/title_activity_game_lobby" />
