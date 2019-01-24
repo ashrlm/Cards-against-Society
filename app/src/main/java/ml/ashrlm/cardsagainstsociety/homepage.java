@@ -36,7 +36,7 @@ public class homepage extends AppCompatActivity {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        onResume(); //Sign in
+        //onResume(); //Sign in TODO: RMDEBUGCOMMENT
     }
 
     @Override
@@ -131,8 +131,8 @@ public class homepage extends AppCompatActivity {
     }
 
     public void settingsButton(View view) {
-        Intent gotoCredits = new Intent(this, credits.class);
-        startActivity(gotoCredits);
+        Intent gotoSettings = new Intent(this, settings.class);
+        startActivity(gotoSettings);
     }
 
 }
