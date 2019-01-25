@@ -25,25 +25,25 @@
         tools:layout_editor_absoluteX="0dp">
 
         <Button
-            android:id="@+id/newGameButton"
+            android:id="@+id/prefRoleButton"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginStart="30dp"
             android:layout_marginTop="168dp"
             android:layout_marginEnd="30dp"
             android:background="@drawable/button"
-            android:onClick="playGameButton"
-            android:text="PLAY"
+            android:onClick="preferredRoleButton"
+            android:text="PREFERRED ROLE"
             android:textSize="30sp"
             android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@+id/editDecksButton"
+            app:layout_constraintBottom_toTopOf="@+id/tutorialButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/editDecksButton"
+            android:id="@+id/tutorialButton"
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginStart="30dp"
@@ -51,14 +51,14 @@
             android:layout_marginEnd="30dp"
             android:layout_marginBottom="103dp"
             android:background="@drawable/button"
-            android:onClick="editDecksButton"
-            android:text="EDIT DECKS"
+            android:onClick="tutorialButton"
+            android:text="TUTORIAL"
             android:textSize="30sp"
             app:layout_constraintBottom_toTopOf="@+id/creditsButton"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/newGameButton" />
+            app:layout_constraintTop_toBottomOf="@+id/prefRoleButton" />
 
         <Button
             android:id="@+id/creditsButton"
@@ -68,9 +68,9 @@
             android:layout_marginEnd="30dp"
             android:layout_marginBottom="148dp"
             android:background="@drawable/button"
-            android:onClick="settingsButton"
+            android:onClick="creditsButton"
             android:paddingBottom="5dp"
-            android:text="SETTINGS"
+            android:text="CREDITS"
             android:textSize="30sp"
             android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -473,6 +473,10 @@ public class mainGame extends AppCompatActivity {
             - Make settings page
                 - Credits
                 - Tutorial mode ON/OFF (ADD TUTORIAL TOASTS)
+                    - Note about these - Use int
+                        - 0: Don't show
+                        - 1: First run - Show, then set to 0
+                        - 2: Always on - Show
             - Make play game button have QUICK GAME / INVITE PLAYERS buttons
             - Add invite players option
 

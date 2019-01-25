@@ -130,7 +130,7 @@ public class homepage extends AppCompatActivity {
         startActivity(gotoEditDecks);
     }
 
-    public void creditsButton(View view) {
+    public void settingsButton(View view) {
         Intent gotoCredits = new Intent(this, credits.class);
         startActivity(gotoCredits);
     }

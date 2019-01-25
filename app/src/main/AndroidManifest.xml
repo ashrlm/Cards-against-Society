@@ -10,6 +10,7 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity android:name=".settings"></activity>
 
         <meta-data
             android:name="com.google.android.gms.games.APP_ID"
