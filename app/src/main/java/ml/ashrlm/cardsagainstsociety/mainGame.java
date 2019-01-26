@@ -29,6 +29,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.Player;
@@ -250,7 +251,7 @@ public class mainGame extends AppCompatActivity {
                     if (cardsEnabled && chooseCard != 0) {
                         Toast.makeText(getApplicationContext(), "Choose the card which best fits with the black card shown above", Toast.LENGTH_SHORT).show();
                         if (chooseCard == 1) {
-                            mSharedPrefs.edit().putInt("CHOOSE_BEST_CARD_CZAR", 1).apply();
+                            mSharedPrefs.edit().putInt("CHOOSE_BEST_CARD_CZAR", 0).apply();
                         }
                     }
 
@@ -270,7 +271,6 @@ public class mainGame extends AppCompatActivity {
     private RoomUpdateCallback mRoomUpdateCallback = new RoomUpdateCallback() {
         @Override
         public void onRoomCreated(int statusCode, @Nullable Room room) {
-           // Log.d(TAG, "onRoomCreated(" + statusCode + ", " + room + ")");
             if (statusCode != GamesCallbackStatusCodes.OK) {
                // Log.d(TAG, "leaving");
                 finish();
@@ -329,7 +329,6 @@ public class mainGame extends AppCompatActivity {
                     @Override
                     public void onSuccess(Intent intent) {
                         // show waiting room UI
-                       // Log.d(TAG, "Waiting room UI shown");
                         returnedFromWaitingUi = true;
                         startActivityForResult(intent, RC_WAITING_ROOM);
                         /*NOTE: In time, this will be updated to use a custom UI that better fits
@@ -424,7 +423,6 @@ public class mainGame extends AppCompatActivity {
     };
 
     private void signInSilently() {
-       // Log.d(TAG, "Silent sign-in attempted");
         GoogleSignInClient signInClient = GoogleSignIn.getClient(this,
                 GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN);
         signInClient.silentSignIn().addOnCompleteListener(this,
@@ -434,9 +432,8 @@ public class mainGame extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // The signed in account is stored in the task's result.
                             onConnected(task.getResult());
-                           // Log.d(TAG, "Silent sign-in succeeded");
                         } else {
-                           // Log.e(TAG, "Silent sign-in failed");
+                            finish();
                         }
                     }
                 });
@@ -473,6 +470,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Bugs to fix):
         - Sometimes people leaving immediately in a weird way
+        - Game not being ended properly (Continuing after done with cards)
      */
 
     /* TODO: (Refactor)

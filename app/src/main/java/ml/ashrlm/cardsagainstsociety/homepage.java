@@ -109,7 +109,7 @@ public class homepage extends AppCompatActivity {
     public void onResume() {
         super.onResume();
        // Log.d(TAG, "onResume()");
-        if (GoogleSignIn.getLastSignedInAccount(homepage.this) == null) {
+        if (GoogleSignIn.getLastSignedInAccount(this) == null) {
             startSignInIntent();
         }
     }
