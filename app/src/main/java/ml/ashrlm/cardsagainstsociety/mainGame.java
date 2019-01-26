@@ -300,7 +300,7 @@ public class mainGame extends AppCompatActivity {
            // Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
             mParticipantId = mRoom.getParticipantId(mPlayerId);
-            int prefRole = mSharedPrefs.getInt("PREF_ROLE", 0);
+            int prefRole = mSharedPrefs.getInt("PREFERRED_ROLE", 0);
             if (prefRole == 0) {
                 //No preference
                 mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
@@ -856,8 +856,12 @@ public class mainGame extends AppCompatActivity {
 
     private void updateBlack(String newblack) {
         TextView blackPrompt = findViewById(R.id.blackCardMain);
-        if (blackPrompt.getText().toString().equals("")) {
+        int CHOOSE_BEST_CARD_PLAYER = mSharedPrefs.getInt("CHOOSE_BEST_CARD_PLAYER", 1);
+        if (blackPrompt.getText().toString().equals("") && CHOOSE_BEST_CARD_PLAYER != 0) {
             Toast.makeText(this, "Choose the card which best fits with the black card", Toast.LENGTH_SHORT).show();
+            if (CHOOSE_BEST_CARD_PLAYER == 1) {
+                mSharedPrefs.edit().putInt("CHOOSE_BEST_CARD_PLAYER", 0).apply();
+            }
         }
         blackPrompt.setText(newblack);
         if (newblack.toLowerCase().contains("[pick")) {
