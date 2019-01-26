@@ -1,6 +1,7 @@
 package ml.ashrlm.cardsagainstsociety;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.webkit.MimeTypeMap;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -28,9 +30,10 @@ import java.util.ArrayList;
 
 public class editDecks extends AppCompatActivity {
 
-    private ArrayList<String> cards = new ArrayList<String>();
+    private ArrayList<String> cards = new ArrayList<>();
     private LinearLayout decksLayout;
     private final String TAG = "ashrlm.cas";
+    private SharedPreferences mSharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,14 @@ public class editDecks extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society - Edit decks");
         setSupportActionBar(myToolbar);
+        mSharedPrefs = getSharedPreferences("CAS_PREFS", MODE_PRIVATE);
+        int PICK_EDIT_DECK = mSharedPrefs.getInt("PICK_EDIT_DECK", 1);
+        if (PICK_EDIT_DECK != 0) {
+            Toast.makeText(this, "Choose a deck to edit. Alternatively, create a new one.", Toast.LENGTH_SHORT).show();
+            if (PICK_EDIT_DECK == 1) {
+                mSharedPrefs.edit().putInt("PICK_EDIT_DECK", 0).apply();
+            }
+        }
     }
 
     private void getCards () {

@@ -8,7 +8,6 @@
     <string name="title_activity_select_players">selectPlayers</string>
     <string name="app_id">284348186630</string>
     <string name="title_activity_edit_decks">editDecks</string>
-    <string name="app_header">Cards against \n Society</string>
     <string name="game_results"><u>Game Results</u></string>
     <string name="title_activity_edit_deck">editDeck</string>
     <string name="title_activity_new_deck">newDeck</string>
@@ -23,4 +22,5 @@
     <string name="start_game">Start game</string>
     <string name="title_activity_tutorial">tutorial</string>
     <string name="wait_for_czar">Please wait while the czar selects the avaliable decks</string>
+    <string name="DECK_COLOR_INFO">Choose a deck color\nBlack: Hint cards\nWhite: Playable cards</string>
 </resources>

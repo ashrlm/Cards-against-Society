@@ -2,6 +2,7 @@ package ml.ashrlm.cardsagainstsociety;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
@@ -80,6 +81,7 @@ public class mainGame extends AppCompatActivity {
     private boolean gameOver = false;
     private AlertDialog deckSelection;
     private BigInteger mCzarSubmission;
+    private SharedPreferences mSharedPrefs;
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private GoogleSignInAccount mSignedInAccount;
@@ -105,6 +107,7 @@ public class mainGame extends AppCompatActivity {
         Intent intentFromHomepage = getIntent();
         role = intentFromHomepage.getIntExtra("role", 0x0);
         if (role == 0x1) { isCzar = true; }
+        mSharedPrefs = getSharedPreferences("CAS_PREFS", MODE_PRIVATE);
     }
 
     @Override
@@ -199,7 +202,7 @@ public class mainGame extends AppCompatActivity {
                             requestCards();
                         } else {
                            // Log.d(TAG, "Not czar");
-                            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_SHORT).show();
                             runGame();
                         }
 
@@ -237,10 +240,20 @@ public class mainGame extends AppCompatActivity {
                     // White card sent to czar by player
                     updateCzarWhite(message.substring(2), senderId);
                     numReceived++;
+                    boolean cardsEnabled = numReceived == mParticipants.size()-1;
                     LinearLayout whiteLayout = findViewById(R.id.whitesScrolledLayout);
                     for (int i = 0; i < whiteLayout.getChildCount(); i++) {
-                        whiteLayout.getChildAt(i).setEnabled(numReceived == mParticipants.size()-1);
+                        whiteLayout.getChildAt(i).setEnabled(cardsEnabled);
                     }
+
+                    int chooseCard = mSharedPrefs.getInt("CHOOSE_BEST_CARD_CZAR", 1);
+                    if (cardsEnabled && chooseCard != 0) {
+                        Toast.makeText(getApplicationContext(), "Choose the card which best fits with the black card shown above", Toast.LENGTH_SHORT).show();
+                        if (chooseCard == 1) {
+                            mSharedPrefs.edit().putInt("CHOOSE_BEST_CARD_CZAR", 1).apply();
+                        }
+                    }
+
 
                 } else if (message.charAt(0) == 'w') {
                    // Log.d(TAG, "whiteFromCzar: " + message.substring(1));
@@ -287,7 +300,17 @@ public class mainGame extends AppCompatActivity {
            // Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
             mParticipantId = mRoom.getParticipantId(mPlayerId);
-            mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
+            int prefRole = mSharedPrefs.getInt("PREF_ROLE", 0);
+            if (prefRole == 0) {
+                //No preference
+                mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(9)) + mPlayerId.substring(2));
+            } else if (prefRole == 1) {
+                //Preferred player
+                mCzarSubmission = new BigInteger(String.valueOf(new Random().nextInt(4)) + "0"+ mPlayerId.substring(2));
+            } else if (prefRole == 2) {
+                //Preferred czar
+                mCzarSubmission = new BigInteger(String.valueOf("9" + new Random().nextInt(9)) + mPlayerId.substring(2));
+            }
             czarNums.add(mCzarSubmission);
             sendMsg("czarnum" + String.valueOf(mCzarSubmission));
         }
@@ -431,9 +454,11 @@ public class mainGame extends AppCompatActivity {
                 showScores.putExtra("scores", namedWonCards);
                 startActivity(showScores);
             }
+        } else {
+            finish();
         }
-       // Log.e(TAG, "roomLeft");
         if (mRoom != null && mRealTimeMultiplayerClient != null && mRoomConfig != null) { mRealTimeMultiplayerClient.leave(mRoomConfig, mRoomId); }
+        // Log.e(TAG, "roomLeft");
     }
 
     protected void onResume() {
@@ -446,9 +471,8 @@ public class mainGame extends AppCompatActivity {
 
     // ------------------------------------Main Game logic-------------------------------------------
 
-    /* TODO (Bugs to fix):
+    /* TODO: (Bugs to fix):
         - Sometimes people leaving immediately in a weird way
-        - Bug with [PICK 3]
      */
 
     /* TODO: (Refactor)
@@ -457,6 +481,7 @@ public class mainGame extends AppCompatActivity {
      */
 
     /* TODO: (Necessary Features)
+        - Fix credits
      */
 
     /* TODO: (Optional features)
@@ -469,18 +494,9 @@ public class mainGame extends AppCompatActivity {
 
         - Sync decks with website
 
-        - Rework homepage
-            - Make settings page
-                - Credits
-                - Tutorial mode ON/OFF (ADD TUTORIAL TOASTS)
-                    - Note about these - Use int
-                        - 0: Don't show
-                        - 1: First run - Show, then set to 0
-                        - 2: Always on - Show
-            - Make play game button have QUICK GAME / INVITE PLAYERS buttons
-            - Add invite players option
-
-
+        - Split PLAY GAME vertically into PLAY GAME and VIEW_INVITES
+            - Make play game use invite players
+                - List game invites
      */
 
     private void runGame() {
@@ -493,7 +509,13 @@ public class mainGame extends AppCompatActivity {
 
         if (isCzar) {
 
-            //BUG: Cards sent to everyone depending on czars place in line
+            int CHOOSE_AVAILABLE_DECKS = mSharedPrefs.getInt("CHOOSE_AVAILABLE_DECKS", 1);
+            if (CHOOSE_AVAILABLE_DECKS != 0) {
+                Toast.makeText(getApplicationContext(), "Choose playable decks", Toast.LENGTH_SHORT).show();
+                if (CHOOSE_AVAILABLE_DECKS == 1) {
+                    mSharedPrefs.edit().putInt("CHOOSE_AVAILABLE_DECKS", 0).apply();
+                }
+            }
 
             chooseCardBtn.setEnabled(false);
             chooseCardBtn.setText(R.string.choose_card_czar);
@@ -513,6 +535,14 @@ public class mainGame extends AppCompatActivity {
                 targetDeck = whiteCardsSplit.get(i);
                 for (String card : targetDeck) {
                     sendTargetedMsg("w" + card, players.get(i).getParticipantId());
+                }
+            }
+            //Check for shared prefs
+            int WAIT_FOR_PLAYERS = mSharedPrefs.getInt("WAIT_FOR_PLAYERS", 1);
+            if (WAIT_FOR_PLAYERS != 0) {
+                Toast.makeText(this, "Wait while the players pick the best cards", Toast.LENGTH_SHORT).show();
+                if (WAIT_FOR_PLAYERS == 1) {
+                    mSharedPrefs.edit().putInt("WAIT_FOR_PLAYERS", 1).apply();
                 }
             }
 
@@ -539,7 +569,7 @@ public class mainGame extends AppCompatActivity {
     // Czar selection code
 
     private void requestCards() {
-        View layoutInflated = getLayoutInflater().inflate(R.layout.czar_selection, null);
+        View layoutInflated = getLayoutInflater().inflate(R.layout.alert_dialog_selection, null);
         ((ViewGroup) layoutInflated).removeView(layoutInflated.findViewById(R.id.tryPlayButton));
         LinearLayout cardsLayout = layoutInflated.findViewById(R.id.layout_decks);
 
@@ -778,6 +808,13 @@ public class mainGame extends AppCompatActivity {
             }
             // Share white card with czar
             sendTargetedMsg("cw" + whiteCardText, czarId);
+            int WAIT_FOR_CZAR = mSharedPrefs.getInt("WAIT_WHILE_CZAR_DECIDES", 1);
+            if (WAIT_FOR_CZAR != 0) {
+                Toast.makeText(this, "Wait while the czar decides on the best card", Toast.LENGTH_SHORT).show();
+                if (WAIT_FOR_CZAR == 1) {
+                    mSharedPrefs.edit().putInt("WAIT_WHILE_CZAR_DECIDES", 0).apply();
+                }
+            }
         }
     }
 
@@ -819,6 +856,9 @@ public class mainGame extends AppCompatActivity {
 
     private void updateBlack(String newblack) {
         TextView blackPrompt = findViewById(R.id.blackCardMain);
+        if (blackPrompt.getText().toString().equals("")) {
+            Toast.makeText(this, "Choose the card which best fits with the black card", Toast.LENGTH_SHORT).show();
+        }
         blackPrompt.setText(newblack);
         if (newblack.toLowerCase().contains("[pick")) {
             int targetCardsNumPos = newblack.toLowerCase().indexOf("[pick")+6;

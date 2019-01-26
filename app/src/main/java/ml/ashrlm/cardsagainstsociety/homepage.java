@@ -20,7 +20,6 @@ import com.google.android.gms.tasks.Task;
 
 public class homepage extends AppCompatActivity {
 
-    private static final String TAG = "ashrlm.cas";
     private static final int RC_SIGN_IN = 9001;
     private GoogleSignInClient mGoogleSignInClient;
 
@@ -36,7 +35,7 @@ public class homepage extends AppCompatActivity {
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
-        //onResume(); //Sign in TODO: RMDEBUGCOMMENT
+        onResume(); //Sign in
     }
 
     @Override

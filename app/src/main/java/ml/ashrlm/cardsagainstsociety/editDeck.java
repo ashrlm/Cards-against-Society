@@ -1,5 +1,6 @@
 package ml.ashrlm.cardsagainstsociety;
 
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -42,7 +43,6 @@ public class editDeck extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         //Read data to add to new_deck
 
-        //TODO: Update reader
         FileInputStream fis;
         try {
             fis = new FileInputStream(getFilesDir().getPath() + '/' + deckType + '/' + deckPath);

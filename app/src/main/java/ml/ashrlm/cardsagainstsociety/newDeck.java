@@ -1,5 +1,6 @@
 package ml.ashrlm.cardsagainstsociety;
 
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.RadioButton;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -25,6 +27,7 @@ public class newDeck extends AppCompatActivity {
     private EditText deck_title;
     private EditText deck_content;
     private String TAG = "ashrlm.cas";
+    private SharedPreferences mSharedPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +39,14 @@ public class newDeck extends AppCompatActivity {
         setSupportActionBar(myToolbar);
         deck_title = findViewById(R.id.deck_title);
         deck_content = findViewById(R.id.deck_content);
+        mSharedPrefs = getSharedPreferences("CAS_PREFS", MODE_PRIVATE);
+        int DECK_COLOR_INFO = mSharedPrefs.getInt("DECK_COLOR_INFO", 1);
+        if (DECK_COLOR_INFO != 0) {
+            Toast.makeText(this, getString(R.string.DECK_COLOR_INFO), Toast.LENGTH_SHORT).show();
+            if (DECK_COLOR_INFO == 1) {
+                mSharedPrefs.edit().putInt("DECK_COLOR_INFO", 0).apply();
+            }
+        }
     }
 
     @Override
