@@ -470,7 +470,6 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Bugs to fix):
         - Sometimes people leaving immediately in a weird way
-        - Game not being ended properly (Continuing after done with cards)
      */
 
     /* TODO: (Refactor)
@@ -480,6 +479,7 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Necessary Features)
         - Fix credits
+        - Add logging for czars of number of cards remaining to check if a [Choose multiple] card is allowed
      */
 
     /* TODO: (Optional features)
@@ -915,7 +915,7 @@ public class mainGame extends AppCompatActivity {
                 }
             }
         } else {
-            numPlayed++;
+            numPlayed += numTargetCards;
             if (numPlayed == numPerDeck) {
                 gameOver = true;
                 leaveRoomPrep(mRoom);
