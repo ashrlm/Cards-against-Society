@@ -40,30 +40,6 @@ public class settings extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         setSupportActionBar(myToolbar);
         mSharedPrefs = getSharedPreferences("CAS_PREFS", MODE_PRIVATE);
-        //Show tutorial toasts
-        int PREFERRED_ROLE = mSharedPrefs.getInt("PREFERRED_ROLE", 1);
-        if (PREFERRED_ROLE != 0) {
-            Toast.makeText(this, "Use the [PREFERRED ROLE] button to increase chances of getting that role in a game", Toast.LENGTH_SHORT).show();
-            if (PREFERRED_ROLE == 1) {
-                mSharedPrefs.edit().putInt("PREFERRED_ROLE", 0).apply();
-            }
-        }
-
-        int TUTORIAL_JOKE = mSharedPrefs.getInt("TUTORIAL_JOKE", 1);
-        if (TUTORIAL_JOKE != 0) {
-            Toast.makeText(this, "I'm assuming you know what the [TUTORIAL] button does", Toast.LENGTH_SHORT).show();
-            if (TUTORIAL_JOKE == 1) {
-                mSharedPrefs.edit().putInt("TUTORIAL_JOKE", 0).apply();
-            }
-        }
-
-        int CREDITS_INFO = mSharedPrefs.getInt("CREDITS_INFO", 1);
-        if (CREDITS_INFO != 0) {
-            Toast.makeText(this, "Check out the [CREDITS] button to have a look at my website", Toast.LENGTH_SHORT).show();
-            if (CREDITS_INFO == 1) {
-                mSharedPrefs.edit().putInt("CREDITS_INFO", 0).apply();
-            }
-        }
     }
 
     @Override
@@ -88,20 +64,27 @@ public class settings extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        //Show tutorial toasts
+        String[] messages = {
+                "Use the [PREFERRED ROLE] button to increase chances of getting that role in a game",
+                "I'm assuming you know what the [TUTORIAL] button does",
+                "Check out the [CREDITS] button to have a look at my website"
+        };
+        String[] spKeys = {
+                "PREFERRED_ROLE",
+                "TUTORIAL_JOKE",
+                "CREDITS_INFO"
+        };
+        showToasts(messages, spKeys);
+    }
+
     private void logout () {
         // Log.d(TAG, "signOut()");
 
-        mGoogleSignInClient.signOut().addOnCompleteListener(this,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-
-                        if (task.isSuccessful()) {
-                            // Log.d(TAG, "signOut(): success");
-                            onResume();
-                        }
-                    }
-                });
+        mGoogleSignInClient.signOut();
     }
 
     //------------------------------Button Response Code--------------------------------------------
@@ -223,4 +206,34 @@ public class settings extends AppCompatActivity {
         Intent showCredits = new Intent(this, credits.class);
         startActivity(showCredits);
     }
+
+    private void showToasts(final String[] messages, final String[] spKeys) {
+        final Thread showToastThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < messages.length; i++) {
+                    final String message = messages[i];
+                    int toastMode = mSharedPrefs.getInt(spKeys[i], 1);
+                    if (toastMode != 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(settings.this, message, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                        if (toastMode == 1) {
+                            mSharedPrefs.edit().putInt(spKeys[i], 0).apply();
+                        }
+                    }
+                    try {
+                        Thread.sleep(2100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        showToastThread.start();
+    }
+
 }
