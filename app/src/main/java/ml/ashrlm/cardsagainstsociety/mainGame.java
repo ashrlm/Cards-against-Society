@@ -774,11 +774,11 @@ public class mainGame extends AppCompatActivity {
         findViewById(R.id.sendCardButton).setEnabled(false);
         if (isCzar) {
 
-            String winningCardText = targetCards.get(0).getText().toString();
+            String blackText = ((TextView) findViewById(R.id.blackCardMain)).getText().toString();
             String winnerId = targetCards.get(0).getTag().toString();
 
-            sendMsg("win " + targetCards.get(0).getText().toString() + " winnerId " + winnerId);
-            updateWins(winningCardText, winnerId);
+            sendMsg("win " + blackText + " winnerId " + winnerId);
+            updateWins(blackText, winnerId);
 
             // Clear all cards from bottom of screen
             ((ViewGroup) findViewById(R.id.whitesScrolledLayout)).removeAllViews();
