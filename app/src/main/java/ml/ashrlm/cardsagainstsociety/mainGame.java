@@ -47,6 +47,7 @@ import com.google.android.gms.games.multiplayer.realtime.RoomConfig;
 import com.google.android.gms.games.multiplayer.realtime.RoomStatusUpdateCallback;
 import com.google.android.gms.games.multiplayer.realtime.RoomUpdateCallback;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.common.collect.Lists;
@@ -180,6 +181,7 @@ public class mainGame extends AppCompatActivity {
                 .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
                 .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
+        Log.d(TAG, String.valueOf(mRoomConfig));
         mRealTimeMultiplayerClient.create(mRoomConfig);
     }
 
@@ -273,7 +275,7 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onRoomCreated(int statusCode, @Nullable Room room) {
             if (statusCode != GamesCallbackStatusCodes.OK) {
-               // Log.d(TAG, "leaving");
+                Log.d(TAG, "leaving: " + statusCode);
                 finish();
                 return;
             }
@@ -335,6 +337,12 @@ public class mainGame extends AppCompatActivity {
                                 the rest of the app. Do not worry about the weird behaviour of back,
                                 this will be fixed when a custom waiting room UI is implemented, as it will only
                                 change layout, not activity.*/
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG, "Error showing waiting room", e);
                     }
                 });
     }
@@ -494,7 +502,6 @@ public class mainGame extends AppCompatActivity {
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO: (Bugs to fix):
-        - Czarnums sometimes stuck at 2
      */
 
     /* TODO: (Refactor)
@@ -578,7 +585,7 @@ public class mainGame extends AppCompatActivity {
                 }
                 int numToPlayBeginIndex;
                 if (newBlack.toLowerCase().contains("[pick")) {
-                    numToPlayBeginIndex = newBlack.lastIndexOf("[pick") + 5;
+                    numToPlayBeginIndex = newBlack.toLowerCase().lastIndexOf("[pick") + 5;
                 } else {
                     break;
                 }
