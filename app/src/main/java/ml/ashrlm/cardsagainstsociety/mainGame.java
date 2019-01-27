@@ -1,5 +1,6 @@
 package ml.ashrlm.cardsagainstsociety;
 
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,8 +18,10 @@ import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
@@ -31,6 +34,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.games.Games;
+import com.google.android.gms.games.GamesActivityResultCodes;
 import com.google.android.gms.games.GamesCallbackStatusCodes;
 import com.google.android.gms.games.Player;
 import com.google.android.gms.games.PlayersClient;
@@ -86,7 +90,6 @@ public class mainGame extends AppCompatActivity {
     private List<Participant> mParticipants;
     private final String TAG = "ashrlm.cas";
     private GoogleSignInAccount mSignedInAccount;
-    private boolean returnedFromWaitingUi = false; // Used until custom waiting room UI
     private static final int RC_WAITING_ROOM = 9007;
     private ArrayList<String> whiteCards = new ArrayList<>();
     private ArrayList<String> blackCards = new ArrayList<>();
@@ -105,9 +108,6 @@ public class mainGame extends AppCompatActivity {
         Toolbar myToolbar = findViewById(R.id.my_toolbar);
         myToolbar.setTitle("Cards against Society - Loading lobby");
         setSupportActionBar(myToolbar);
-        Intent intentFromHomepage = getIntent();
-        role = intentFromHomepage.getIntExtra("role", 0x0);
-        if (role == 0x1) { isCzar = true; }
         mSharedPrefs = getSharedPreferences("CAS_PREFS", MODE_PRIVATE);
     }
 
@@ -194,15 +194,16 @@ public class mainGame extends AppCompatActivity {
 
                 if (message.startsWith("czarnum")) {
                     czarNums.add(new BigInteger(message.substring(7)));
+                    Log.d(TAG, String.valueOf(czarNums.size()));
                     if (czarNums.size() == mParticipants.size()) {
                         setupGame();
                         if (mCzarSubmission.equals(Collections.max(czarNums))) {
                             isCzar = true;
-                           // Log.d(TAG, "Czar");
+                            Log.d(TAG, "Czar");
                             // Request cards
                             requestCards();
                         } else {
-                           // Log.d(TAG, "Not czar");
+                            Log.d(TAG, "Not czar");
                             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_SHORT).show();
                             runGame();
                         }
@@ -297,7 +298,7 @@ public class mainGame extends AppCompatActivity {
 
         @Override
         public void onRoomConnected(int statusCode, @Nullable Room room) {
-           // Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
+            Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
             mParticipantId = mRoom.getParticipantId(mPlayerId);
             int prefRole = mSharedPrefs.getInt("PREFERRED_ROLE", 0);
@@ -329,7 +330,6 @@ public class mainGame extends AppCompatActivity {
                     @Override
                     public void onSuccess(Intent intent) {
                         // show waiting room UI
-                        returnedFromWaitingUi = true;
                         startActivityForResult(intent, RC_WAITING_ROOM);
                         /*NOTE: In time, this will be updated to use a custom UI that better fits
                                 the rest of the app. Do not worry about the weird behaviour of back,
@@ -433,7 +433,7 @@ public class mainGame extends AppCompatActivity {
                             // The signed in account is stored in the task's result.
                             onConnected(task.getResult());
                         } else {
-                            finish();
+                            Log.e(TAG, "SignInFailed: " + task.getException().getMessage());
                         }
                     }
                 });
@@ -458,18 +458,43 @@ public class mainGame extends AppCompatActivity {
         // Log.e(TAG, "roomLeft");
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_WAITING_ROOM) {
+
+            if (resultCode == Activity.RESULT_OK) {
+                // Start the game!
+                setupGame();
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                // Waiting room was dismissed with the back button. The meaning of this
+                // action is up to the game. You may choose to leave the room and cancel the
+                // match, or do something else like minimize the waiting room and
+                // continue to connect in the background.
+
+                // in this example, we take the simple approach and just leave the room:
+                Games.getRealTimeMultiplayerClient(this,
+                        GoogleSignIn.getLastSignedInAccount(this))
+                        .leave(mRoomConfig, mRoom.getRoomId());
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            } else if (resultCode == GamesActivityResultCodes.RESULT_LEFT_ROOM) {
+                // player wants to leave the room.
+                Games.getRealTimeMultiplayerClient(this,
+                        GoogleSignIn.getLastSignedInAccount(this))
+                        .leave(mRoomConfig, mRoom.getRoomId());
+                getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            }
+        }
+    }
+
     protected void onResume() {
         super.onResume();
-        if (returnedFromWaitingUi && !mPlaying) {
-           // Log.d(TAG, "returnedFromWaitingUI");
-            finish();
-        }
     }
 
     // ------------------------------------Main Game logic-------------------------------------------
 
     /* TODO: (Bugs to fix):
-        - Sometimes people leaving immediately in a weird way
+        - Czarnums sometimes stuck at 2
      */
 
     /* TODO: (Refactor)
@@ -479,7 +504,6 @@ public class mainGame extends AppCompatActivity {
 
     /* TODO: (Necessary Features)
         - Fix credits
-        - Add logging for czars of number of cards remaining to check if a [Choose multiple] card is allowed
      */
 
     /* TODO: (Optional features)
@@ -500,8 +524,6 @@ public class mainGame extends AppCompatActivity {
     private void runGame() {
 
        // Log.d(TAG, "runGame();");
-
-        chooseCardBtn = findViewById(R.id.sendCardButton);
 
         sendMsg("name" + mName); // Share name
 
@@ -546,7 +568,25 @@ public class mainGame extends AppCompatActivity {
 
             // Send initial black card
            // Log.d(TAG, "numBlacks: " + blackCards.size());
-            String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+            String newBlack;
+            while (true) {
+                try {
+                    newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+                } catch (IllegalArgumentException e) {
+                    leaveRoomPrep(mRoom);
+                    return;
+                }
+                int numToPlayBeginIndex;
+                if (newBlack.toLowerCase().contains("[pick")) {
+                    numToPlayBeginIndex = newBlack.lastIndexOf("[pick") + 5;
+                } else {
+                    break;
+                }
+                Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
+                if (Integer.parseInt(newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1)) <= numPerDeck - numPlayed) {
+                    break;
+                }
+            }
             blackCards.remove(newBlack);
             updateBlack(newBlack);
             sendMsg("newblack " + newBlack);
@@ -914,12 +954,13 @@ public class mainGame extends AppCompatActivity {
                     break;
                 }
             }
-        } else {
-            numPlayed += numTargetCards;
-            if (numPlayed == numPerDeck) {
-                gameOver = true;
-                leaveRoomPrep(mRoom);
-            }
+        }
+        numPlayed += numTargetCards;
+        if (numPlayed == numPerDeck) {
+            Log.d(TAG, "outOfCards");
+            gameOver = true;
+            leaveRoomPrep(mRoom);
+
         }
     }
 
@@ -1024,5 +1065,8 @@ public class mainGame extends AppCompatActivity {
         myToolbar.setTitle("Cards against Society");
         setSupportActionBar(myToolbar);
         mPlaying = true;
+        chooseCardBtn = findViewById(R.id.sendCardButton);
+        chooseCardBtn.setEnabled(false);
+        chooseCardBtn.setText("Choose card");
     }
 }
