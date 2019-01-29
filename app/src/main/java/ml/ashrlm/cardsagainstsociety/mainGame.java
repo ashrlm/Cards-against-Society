@@ -831,13 +831,28 @@ public class mainGame extends AppCompatActivity {
             // Update numReceived to ensure all played before czar makes selection
             numReceived = 0;
 
-            try {
-                String newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
-                updateBlack(newBlack);
-                sendMsg("newblack " + newBlack);
-            } catch (IllegalArgumentException e) {
-                leaveRoomPrep(mRoom);
+            String newBlack;
+            while (true) {
+                try {
+                    newBlack = blackCards.get(new Random().nextInt(blackCards.size()));
+                } catch (IllegalArgumentException e) {
+                    leaveRoomPrep(mRoom);
+                    return;
+                }
+                int numToPlayBeginIndex;
+                if (newBlack.toLowerCase().contains("[pick")) {
+                    numToPlayBeginIndex = newBlack.toLowerCase().lastIndexOf("[pick") + 5;
+                } else {
+                    break;
+                }
+                Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
+                if (Integer.parseInt(newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1)) <= numPerDeck - numPlayed) {
+                    break;
+                }
             }
+            blackCards.remove(newBlack);
+            updateBlack(newBlack);
+            sendMsg("newblack " + newBlack);
         } else {
             // Disable all cards
             LinearLayout whitesScrolledLayout = findViewById(R.id.whitesScrolledLayout);
