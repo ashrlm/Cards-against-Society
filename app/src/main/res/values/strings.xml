@@ -2,8 +2,16 @@
     <string name="app_name">Cards against Society</string>
     <string name="title_activity_new_game">newGame</string>
     <string name="title_activity_join_game">joinGame</string>
-    <string name="credits"><a href="http://www.ashrlm.ml">-AshrLM</a>\n
-                           <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>
+    <string name="credits"><b>App developed by</b>:\n
+                           <a href="http://www.ashrlm.ml">Asher Matheson</a>\n
+                           <a href="https://github.com/ashrlm/Cards-against-Society">Source Code</a>\n\n\n
+                           <i>
+                           Although some cards have been used from the <a href="http://s3.amazonaws.com/cah/CAH_MainGame.pdf">original Cards against Humanity® game</a>
+                           under the <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/legalcode">Creative Commons BY-NC-SA 2.0 license</a>
+                           (a human-readable summary of which can be found <a href="https://creativecommons.org/licenses/by-nc-sa/2.0/">here</a>,
+                           this app is not endorsed by or affiliated in any with <a href="https://cardsagainsthumanity.com">Cards against Humanity®</a>.
+                           </i>
+
     </string>
     <string name="title_activity_select_players">selectPlayers</string>
     <string name="app_id">782873482759</string>
