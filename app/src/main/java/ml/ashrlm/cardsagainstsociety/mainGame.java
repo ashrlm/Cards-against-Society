@@ -181,7 +181,7 @@ public class mainGame extends AppCompatActivity {
                 .setRoomStatusUpdateCallback(mRoomStatusUpdateCallback)
                 .setAutoMatchCriteria(autoMatchCriteria)
                 .build();
-        Log.d(TAG, String.valueOf(mRoomConfig));
+      //  Log.d(TAG, String.valueOf(mRoomConfig));
         mRealTimeMultiplayerClient.create(mRoomConfig);
     }
 
@@ -196,16 +196,16 @@ public class mainGame extends AppCompatActivity {
 
                 if (message.startsWith("czarnum")) {
                     czarNums.add(new BigInteger(message.substring(7)));
-                    Log.d(TAG, String.valueOf(czarNums.size()));
+                  //  Log.d(TAG, String.valueOf(czarNums.size()));
                     if (czarNums.size() == mParticipants.size()) {
                         setupGame();
                         if (mCzarSubmission.equals(Collections.max(czarNums))) {
                             isCzar = true;
-                            Log.d(TAG, "Czar");
+                          //  Log.d(TAG, "Czar");
                             // Request cards
                             requestCards();
                         } else {
-                            Log.d(TAG, "Not czar");
+                          //  Log.d(TAG, "Not czar");
                             Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.wait_for_czar), Toast.LENGTH_SHORT).show();
                             runGame();
                         }
@@ -275,7 +275,7 @@ public class mainGame extends AppCompatActivity {
         @Override
         public void onRoomCreated(int statusCode, @Nullable Room room) {
             if (statusCode != GamesCallbackStatusCodes.OK) {
-                Log.d(TAG, "leaving: " + statusCode);
+              //  Log.d(TAG, "leaving: " + statusCode);
                 finish();
                 return;
             }
@@ -300,7 +300,7 @@ public class mainGame extends AppCompatActivity {
 
         @Override
         public void onRoomConnected(int statusCode, @Nullable Room room) {
-            Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
+          //  Log.d(TAG, "onRoomConnected(" + statusCode + ", " + room + ")");
 
             mParticipantId = mRoom.getParticipantId(mPlayerId);
             int prefRole = mSharedPrefs.getInt("PREFERRED_ROLE", 0);
@@ -342,7 +342,7 @@ public class mainGame extends AppCompatActivity {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Log.e(TAG, "Error showing waiting room", e);
+                      //  Log.e(TAG, "Error showing waiting room", e);
                     }
                 });
     }
@@ -441,7 +441,7 @@ public class mainGame extends AppCompatActivity {
                             // The signed in account is stored in the task's result.
                             onConnected(task.getResult());
                         } else {
-                            Log.e(TAG, "SignInFailed: " + task.getException().getMessage());
+                          //  Log.e(TAG, "SignInFailed: " + task.getException().getMessage());
                         }
                     }
                 });
@@ -589,7 +589,7 @@ public class mainGame extends AppCompatActivity {
                 } else {
                     break;
                 }
-                Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
+              //  Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
                 if (Integer.parseInt(newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1)) <= numPerDeck - numPlayed) {
                     break;
                 }
@@ -845,7 +845,7 @@ public class mainGame extends AppCompatActivity {
                 } else {
                     break;
                 }
-                Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
+              //  Log.d(TAG, newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1));
                 if (Integer.parseInt(newBlack.substring(numToPlayBeginIndex, numToPlayBeginIndex+1)) <= numPerDeck - numPlayed) {
                     break;
                 }
@@ -979,7 +979,7 @@ public class mainGame extends AppCompatActivity {
         }
         numPlayed += numTargetCards;
         if (numPlayed == numPerDeck) {
-            Log.d(TAG, "outOfCards");
+          //  Log.d(TAG, "outOfCards");
             gameOver = true;
             leaveRoomPrep(mRoom);
 
